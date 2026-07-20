@@ -398,20 +398,64 @@
         );
 
         // Sticky Chapter Nav
-        const ChapterNav = () => (
-            <nav className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-apple-divider z-50">
-                <div className="max-w-[1024px] mx-auto px-6 h-14 flex items-center justify-between">
-                    <span className="font-semibold text-xl tracking-tight">นิติบุคคลหมู่บ้าน สีวลี</span>
-                    <div className="hidden md:flex items-center gap-6 text-[12px] font-medium">
-                        <a href="#timeline" className="hover:text-apple-blue transition-colors">ลำดับเหตุการณ์</a>
-                        <a href="#budget" className="hover:text-apple-blue transition-colors">งบประมาณ</a>
-                        <a href="#payment-status" className="hover:text-apple-blue transition-colors">สถานะชำระเงิน</a>
-                        <a href="#crisis" className="hover:text-apple-blue transition-colors">ปัญหาเฉพาะหน้า</a>
-                        <a href="#roadmap" className="hover:text-apple-blue transition-colors">แผนงานอนาคต</a>
+        const NAV_LINKS = [
+            { href: '#timeline', label: 'ลำดับเหตุการณ์' },
+            { href: '#budget', label: 'งบประมาณ' },
+            { href: '#payment-status', label: 'สถานะชำระเงิน' },
+            { href: '#crisis', label: 'ปัญหาเฉพาะหน้า' },
+            { href: '#roadmap', label: 'แผนงานอนาคต' }
+        ];
+
+        const ChapterNav = () => {
+            const [open, setOpen] = useState(false);
+            return (
+                <nav className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-apple-divider z-50">
+                    <div className="max-w-[1024px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+                        <span className="font-semibold text-base sm:text-xl tracking-tight truncate">นิติบุคคลหมู่บ้าน สีวลี</span>
+
+                        {/* Desktop links */}
+                        <div className="hidden md:flex items-center gap-6 text-[12px] font-medium shrink-0">
+                            {NAV_LINKS.map((l) => (
+                                <a key={l.href} href={l.href} className="hover:text-apple-blue transition-colors">{l.label}</a>
+                            ))}
+                        </div>
+
+                        {/* Mobile hamburger button */}
+                        <button
+                            onClick={() => setOpen((v) => !v)}
+                            className="md:hidden w-9 h-9 flex items-center justify-center rounded-full hover:bg-apple-card shrink-0"
+                            aria-label="เปิดเมนู"
+                        >
+                            {open ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+                                </svg>
+                            )}
+                        </button>
                     </div>
-                </div>
-            </nav>
-        );
+
+                    {/* Mobile dropdown panel */}
+                    {open && (
+                        <div className="md:hidden border-t border-apple-divider bg-white px-4 py-3 flex flex-col">
+                            {NAV_LINKS.map((l) => (
+                                <a
+                                    key={l.href}
+                                    href={l.href}
+                                    onClick={() => setOpen(false)}
+                                    className="py-3 text-[15px] font-medium border-b border-apple-divider last:border-b-0 active:text-apple-blue"
+                                >
+                                    {l.label}
+                                </a>
+                            ))}
+                        </div>
+                    )}
+                </nav>
+            );
+        };
 
         // Timeline Section (Horizontal Scroll like Mac models comparison)
         const TimelineSection = () => (
@@ -806,7 +850,7 @@
                             )}
                             {searchResult && (
                                 <div className="mt-4 bg-apple-card rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                    <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
+                                    <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-1 text-sm">
                                         <span className="text-apple-secondary">บ้านเลขที่</span>
                                         <span className="font-semibold text-apple-text">{searchResult.house}</span>
                                         <span className="text-apple-secondary">ชื่อเจ้าของบ้าน</span>
