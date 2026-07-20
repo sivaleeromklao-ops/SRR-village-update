@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <!-- รองรับการเปิดบนมือถือและ LINE In-App Browser อย่างสมบูรณ์ -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>สรุปสถานการณ์ - นิติบุคคลหมู่บ้าน สีวลี</title>
+
+    <!-- เพิ่ม Open Graph Tags เพื่อให้เวลาส่งลิงก์ใน LINE แล้วขึ้นการ์ดพรีวิวสวยงาม -->
+    <meta property="og:title" content="สรุปสถานการณ์: นิติบุคคลหมู่บ้านช่วงเปลี่ยนผ่าน">
+    <meta property="og:description" content="อัปเดตการดำเนินงาน งบประมาณบริหาร การแก้ปัญหาเฉพาะหน้า และแผนงานครึ่งปีหลัง 2026 เพื่อความโปร่งใส">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://village-update-2026.tiiny.site/">
+
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Prompt for Thai (resembles SF Pro Thai) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        // Pantone SS2026 / London Fashion Week palette (sampled from the reference sheet)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Prompt', 'sans-serif'],
+                    },
+                    colors: {
+                        apple: {
+                            bg: '#ffffff',
+                            card: '#F7F3ED',
+                            text: '#2C2A3F',
+                            secondary: '#7A7570',
+                            blue: '#926AA8',
+                            blueHover: '#7D5590',
+                            green: '#728F71',
+                            orange: '#EC6935',
+                            divider: '#E4DED3'
+                        },
+                        pantone: {
+                            pink: '#F8B9C2',
+                            orchid: '#926AA8',
+                            caramel: '#C47C54',
+                            canal: '#97B9DF',
+                            shale: '#728F71',
+                            lilac: '#C7AEB2',
+                            teaberry: '#DC3853',
+                            banana: '#F9E199',
+                            mandarin: '#EC6935',
+                            amaranth: '#6E3C57',
+                            palm: '#AFAE5E',
+                            evening: '#2C2A3F',
+                            truffle: '#612E33',
+                            ether: '#A0B5B8',
+                            onyx: '#D6D6CC',
+                            angora: '#E0D1BA'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #2C2A3F;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.015em;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Apple-style typography classes */
+        .typography-hero {
+            font-size: clamp(32px, 5vw, 56px);
+            line-height: 1.07;
+            font-weight: 600;
+            letter-spacing: -0.005em;
+        }
+        .typography-h2 {
+            font-size: clamp(28px, 4vw, 40px);
+            line-height: 1.1;
+            font-weight: 600;
+            letter-spacing: 0em;
+        }
+        .typography-h3 {
+            font-size: 24px;
+            line-height: 1.16;
+            font-weight: 600;
+            letter-spacing: 0.009em;
+        }
+        .typography-body {
+            font-size: 17px;
+            line-height: 1.47;
+            font-weight: 400;
+            letter-spacing: -0.022em;
+        }
+
+        .apple-card-hover {
+            transition: transform 0.3s cubic-bezier(0, 0, 0.5, 1);
+        }
+        .apple-card-hover:hover {
+            transform: scale(1.015);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo } = React;
+
+        // ---------- Helpers ----------
+        function formatBaht(n) {
+            return new Intl.NumberFormat('th-TH').format(Math.round(n));
+        }
+        function formatPct(n) {
+            return (n * 100).toFixed(1) + '%';
+        }
+
+        // ---------- Icons ----------
+        const Icon = ({ name, className = "w-6 h-6", style }) => {
+            const baseProps = {
+                xmlns: "http://www.w3.org/2000/svg",
+                fill: "none",
+                viewBox: "0 0 24 24",
+                strokeWidth: 1.5,
+                stroke: "currentColor",
+                className,
+                style
+            };
+
+            switch (name) {
+                case 'check': return <svg {...baseProps}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+                case 'alert': return <svg {...baseProps}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>;
+                case 'calendar': return <svg {...baseProps}><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>;
+                case 'building': return <svg {...baseProps}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21" /></svg>;
+                case 'bank': return <svg {...baseProps}><path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" /></svg>;
+                case 'info': return <svg {...baseProps}><path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>;
+                case 'coins': return <svg {...baseProps}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg>;
+                case 'pie': return <svg {...baseProps}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v9h9a9 9 0 10-9-9z" /><path strokeLinecap="round" strokeLinejoin="round" d="M21 12A9 9 0 1112 3" /></svg>;
+                case 'leaf': return <svg {...baseProps}><path strokeLinecap="round" strokeLinejoin="round" d="M5 21c0-8 4-14 14-16-1 9-7 14-14 16z" /></svg>;
+                default: return <svg {...baseProps}><circle cx="12" cy="12" r="10" /></svg>;
+            }
+        };
+
+        // ---------- Timeline data ----------
+        const timelineData = [
+            { id: 1, date: "24 พ.ค. 2569", title: "เลือกตั้งกรรมการชุดใหม่", desc: "แทนที่กรรมการชุดเดิมที่ลาออก ถือเป็นจุดเริ่มต้นของการรับมอบอำนาจบริหาร", status: "completed", icon: "calendar" },
+            { id: 2, date: "12 ก.ค. 2569 - 31 ก.ค. 2569", title: "กรมที่ดินออกหนังสือรับรอง", desc: "คณะกรรมการชุดใหม่มีสถานะทางกฎหมายอย่างสมบูรณ์ในการทำธุรกรรมบริหารจัดการ", status: "completed", icon: "info" },
+            { id: 3, date: "12 ก.ค. 2569 - 31 ก.ค. 2569", title: "รอยต่อกับ Primo", desc: "ช่วงเปลี่ยนผ่านการบริหารจัดการจากบริษัท Primo มาสู่คณะกรรมการชุดใหม่ เพื่อเตรียมความพร้อมด้านเอกสารและข้อมูลบัญชี", status: "current", icon: "building" },
+            { id: 4, date: "12 ก.ค. 2569", title: "ธนาคารเปลี่ยนอำนาจ", desc: "สิ้นสุดช่วงสุญญากาศ กรรมการสามารถเข้าถึงบัญชีและบริหารงบได้เต็มรูปแบบ", status: "pending", icon: "bank" }
+        ];
+
+        // ---------- Budget data (from แนบไฟล์ Excel ตารางเปรียบเทียบ) ----------
+        const budgetCategories = [
+            { key: 'security', label: 'รักษาความปลอดภัย — พนักงาน รปภ. (7 นาย)', amount: 2003040, color: '#97B9DF' },
+            { key: 'garden', label: 'ดูแลสวนและกวาดถนน (รวม 8 คน)', amount: 1680000, color: '#AFAE5E' },
+            { key: 'trashPrivate', label: 'เก็บขยะ — เอกชน (260 หลัง)', amount: 333840, color: '#C47C54' },
+            { key: 'trashDistrict', label: 'เก็บขยะ — เขตมีนบุรี (260 หลัง)', amount: 62400, color: '#F9E199' },
+            { key: 'maid', label: 'แม่บ้าน (1 คน)', amount: 218280, color: '#DC3853' },
+            { key: 'electric', label: 'ไฟฟ้าส่วนกลาง (ค่าเฉลี่ย)', amount: 840000, color: '#EC6935' },
+            { key: 'water', label: 'ค่าน้ำประปา (ค่าเฉลี่ย)', amount: 240000, color: '#A0B5B8' },
+            { key: 'admin', label: 'ค่าจ้างบริหาร', amount: 1206960, color: '#926AA8' },
+            {
+                key: 'annualOther', label: 'ค่าใช้จ่ายประจำปี อื่นๆ', amount: 500000, color: '#6E3C57',
+                breakdown: [
+                    { label: 'ค่าตัดต้นไม้ประจำปี', amount: 200000, icon: 'leaf' },
+                    { label: 'ค่าลอกท่อ', amount: 100000, icon: 'info' },
+                    { label: 'ทำความสะอาดบ่อบำบัด', amount: 100000, icon: 'info' },
+                    { label: 'ซ่อมอุปกรณ์ส่วนกลาง (ฉุกเฉิน)', amount: 100000, icon: 'alert' }
+                ]
+            }
+        ];
+        const remainingColor = '#728F71';
+
+        const scenarios = [
+            { key: 'full', label: 'จัดเก็บเต็มจำนวน', shortLabel: '100%', income: 8230200 },
+            { key: 'p95', label: 'จัดเก็บได้ 95%', shortLabel: '95%', income: 7818696 },
+            { key: 'p90', label: 'จัดเก็บได้ 90%', shortLabel: '90%', income: 7407180 }
+        ];
+
+        const totalExpense = budgetCategories.reduce((sum, c) => sum + c.amount, 0);
+        const maxScale = 8500000;
+        const axisTicks = [0, 2000000, 4000000, 6000000, 8000000];
+
+        // ---------- Payment status data (from ไฟล์ SRR_Status_ค่าส่วนกลาง) ----------
+        // 'P' = จ่ายแล้ว, 'U' = ยังไม่ได้จ่าย
+        const paymentDataRaw = [['456/1','P'],['456/2','P'],['456/3','P'],['456/4','U'],['456/5','U'],['456/6','P'],['456/7','P'],['456/8','P'],['456/9','U'],['456/10','U'],['456/11','P'],['456/12','U'],['456/14','P'],['456/15','P'],['456/16','U'],['456/17','P'],['456/18','U'],['456/19','U'],['456/20','P'],['456/21','P'],['456/22','P'],['456/23','P'],['456/24','P'],['456/25','P'],['456/26','P'],['456/27','P'],['456/28','U'],['456/29','P'],['456/30','P'],['456/31','U'],['456/32','U'],['456/33','P'],['456/34','P'],['456/35','U'],['456/36','P'],['456/37','P'],['456/38','U'],['456/39','P'],['456/40','P'],['456/41','P'],['456/42','U'],['456/43','P'],['456/44','U'],['456/45','P'],['456/46','P'],['456/47','P'],['456/48','P'],['456/49','P'],['456/50','U'],['456/51','U'],['456/52','U'],['456/53','P'],['456/54','U'],['456/55','U'],['456/56','P'],['456/57','U'],['456/58','P'],['456/59','P'],['456/60','U'],['456/61','U'],['456/62','P'],['456/63','P'],['456/64','P'],['456/65','P'],['456/67','U'],['456/68','P'],['456/69','P'],['456/70','P'],['456/71','U'],['456/72','U'],['456/73','P'],['456/74','U'],['456/75','P'],['456/76','P'],['456/77','U'],['456/78','P'],['456/79','U'],['456/80','P'],['456/81','P'],['456/82','U'],['456/83','P'],['456/84','P'],['456/85','U'],['456/86','P'],['456/87','U'],['456/88','P'],['456/89','U'],['456/90','P'],['456/91','P'],['456/92','U'],['456/93','P'],['456/94','U'],['456/95','U'],['456/96','P'],['456/97','U'],['456/98','U'],['456/99','P'],['456/100','U'],['456/101','U'],['456/102','U'],['456/103','U'],['456/104','P'],['456/105','P'],['456/106','U'],['456/107','P'],['456/108','U'],['456/109','P'],['456/110','U'],['456/111','U'],['456/112','P'],['456/113','P'],['456/114','P'],['456/115','U'],['456/116','U'],['456/117','P'],['456/118','U'],['456/119','P'],['456/120','P'],['456/121','U'],['456/122','U'],['456/123','P'],['456/124','P'],['456/125','U'],['456/126','P'],['456/127','P'],['456/128','P'],['456/129','U'],['456/130','U'],['456/131','P'],['456/132','P'],['456/133','U'],['456/134','U'],['456/135','P'],['456/136','U'],['456/137','U'],['456/138','U'],['456/139','U'],['456/140','U'],['456/141','U'],['456/142','P'],['456/143','P'],['456/144','U'],['456/145','P'],['456/146','P'],['456/147','P'],['456/148','U'],['456/149','P'],['456/150','P'],['456/151','P'],['456/152','P'],['456/153','U'],['456/154','U'],['456/155','U'],['456/156','U'],['456/157','P'],['456/158','P'],['456/159','U'],['456/160','P'],['456/161','P'],['456/162','P'],['456/163','U'],['456/164','P'],['456/165','U'],['456/166','U'],['456/167','P'],['456/168','U'],['456/169','P'],['456/170','P'],['456/171','P'],['456/172','P'],['456/173','P'],['456/174','P'],['456/175','P'],['456/176','U'],['456/177','U'],['456/178','P'],['456/179','P'],['456/180','P'],['456/181','P'],['456/182','U'],['456/183','P'],['456/184','U'],['456/185','P'],['456/186','P'],['456/187','U'],['456/188','P'],['456/189','U'],['456/190','P'],['456/191','P'],['456/192','P'],['456/193','P'],['456/194','U'],['456/195','P'],['456/196','U'],['456/197','U'],['456/198','U'],['456/199','P'],['456/200','P'],['456/201','P'],['456/202','P'],['456/203','U'],['456/204','U'],['456/205','P'],['456/206','U'],['456/207','P'],['456/208','P'],['456/209','U'],['456/210','P'],['456/211','P'],['456/212','U'],['456/213','P'],['456/214','U'],['456/215','U'],['456/216','U'],['456/217','P'],['456/218','U'],['456/219','U'],['456/220','P'],['456/221','U'],['456/222','P'],['456/223','P'],['456/224','P'],['456/225','U'],['456/226','P'],['456/227','P'],['456/228','P'],['456/229','U'],['456/230','U'],['456/231','U'],['456/232','U'],['456/233','U'],['456/234','U'],['456/235','U'],['456/236','P'],['456/237','U'],['456/238','P'],['456/239','P'],['456/240','U'],['456/241','U'],['456/242','P'],['456/243','P'],['456/244','P'],['456/245','P'],['456/246','P'],['456/247','U'],['456/248','U'],['456/249','P'],['456/250','P'],['456/251','P'],['456/252','U'],['456/253','U'],['456/254','P'],['456/255','U'],['456/256','P'],['456/257','P'],['456/258','P'],['456/259','U'],['456/260','P'],['456/261','U'],['456/262','U']];
+
+        const paymentData = paymentDataRaw.map(([house, code]) => ({
+            house,
+            status: code === 'P' ? 'จ่ายแล้ว' : 'ยังไม่ได้จ่าย'
+        }));
+        const paidHouses = paymentData.filter((d) => d.status === 'จ่ายแล้ว');
+        const unpaidHouses = paymentData.filter((d) => d.status === 'ยังไม่ได้จ่าย');
+        const paymentTotal = paymentData.length;
+        const PAID_COLOR = '#2F9E56';
+        const UNPAID_COLOR = '#DC3853';
+        const HOUSE_PREFIX = '456/';
+
+        function findHouse(query) {
+            const q = query.trim();
+            if (!q) return null;
+            let candidate = q;
+            if (!candidate.includes('/')) {
+                candidate = HOUSE_PREFIX + candidate.replace(/^0+/, '');
+            }
+            return paymentData.find((d) => d.house === candidate) || null;
+        }
+
+        // Build a standalone list page (paid/unpaid) and open it in a new tab,
+        // with its own search, sorting and pagination — no server needed.
+        function openHouseListWindow(status) {
+            const list = status === 'จ่ายแล้ว' ? paidHouses : unpaidHouses;
+            const color = status === 'จ่ายแล้ว' ? PAID_COLOR : UNPAID_COLOR;
+            const rowsJson = JSON.stringify(list);
+            const html = `<!DOCTYPE html>
+<html lang="th"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>รายชื่อบ้านเลขที่ — ${status}</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Prompt', sans-serif; background:#fff; color:#2C2A3F; margin:0; padding:32px 20px; }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .badge { display:inline-block; padding:3px 12px; border-radius:999px; font-size:13px; font-weight:600; color:#fff; background:${color}; margin-bottom:20px; }
+  input[type=text] { width:100%; padding:12px 16px; border:1px solid #E4DED3; border-radius:12px; font-family:'Prompt',sans-serif; font-size:15px; margin-bottom:16px; }
+  table { width:100%; border-collapse: collapse; }
+  th, td { text-align:left; padding:10px 12px; font-size:14px; border-bottom:1px solid #F0EDE7; }
+  th { cursor:pointer; user-select:none; color:#7A7570; font-weight:600; white-space:nowrap; }
+  th:hover { color:#2C2A3F; }
+  .status-pill { display:inline-block; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:600; color:#fff; background:${color}; }
+  .pager { display:flex; align-items:center; justify-content:space-between; margin-top:16px; font-size:13px; color:#7A7570; }
+  .pager button { border:1px solid #E4DED3; background:#fff; border-radius:8px; padding:6px 14px; cursor:pointer; font-family:'Prompt',sans-serif; }
+  .pager button:disabled { opacity:0.4; cursor:not-allowed; }
+  .empty { text-align:center; color:#7A7570; padding:24px 0; }
+</style></head>
+<body><div class="wrap">
+  <h1>รายชื่อบ้านเลขที่ — ${status}</h1>
+  <span class="badge">ทั้งหมด ${list.length} หลัง</span>
+  <input type="text" id="q" placeholder="ค้นหาบ้านเลขที่ เช่น 456/123 หรือ 123" />
+  <table>
+    <thead><tr>
+      <th id="sortHouse">บ้านเลขที่ ⇅</th>
+      <th>สถานะการชำระ</th>
+    </tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="empty" id="empty" style="display:none;">ไม่พบบ้านเลขที่ที่ค้นหา</div>
+  <div class="pager">
+    <span id="pageInfo"></span>
+    <div>
+      <button id="prevBtn">‹ ก่อนหน้า</button>
+      <button id="nextBtn">ถัดไป ›</button>
+    </div>
+  </div>
+</div>
+<script>
+  var allRows = ${rowsJson};
+  var filtered = allRows.slice();
+  var page = 1;
+  var pageSize = 20;
+  var sortAsc = true;
+
+  function houseSortKey(h) {
+    var parts = h.split('/');
+    var num = parseInt(parts[1] || parts[0], 10);
+    return isNaN(num) ? 0 : num;
+  }
+  function render() {
+    var tbody = document.getElementById('tbody');
+    var empty = document.getElementById('empty');
+    var start = (page - 1) * pageSize;
+    var pageRows = filtered.slice(start, start + pageSize);
+    tbody.innerHTML = '';
+    empty.style.display = filtered.length === 0 ? 'block' : 'none';
+    pageRows.forEach(function(r) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + r.house + '</td><td><span class="status-pill">' + r.status + '</span></td>';
+      tbody.appendChild(tr);
+    });
+    var totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    document.getElementById('pageInfo').textContent = 'หน้า ' + page + ' / ' + totalPages + ' (' + filtered.length + ' หลัง)';
+    document.getElementById('prevBtn').disabled = page <= 1;
+    document.getElementById('nextBtn').disabled = page >= totalPages;
+  }
+  document.getElementById('q').addEventListener('input', function(e) {
+    var v = e.target.value.trim();
+    filtered = allRows.filter(function(r) { return r.house.indexOf(v) !== -1; });
+    page = 1;
+    render();
+  });
+  document.getElementById('sortHouse').addEventListener('click', function() {
+    sortAsc = !sortAsc;
+    filtered.sort(function(a, b) {
+      return sortAsc ? houseSortKey(a.house) - houseSortKey(b.house) : houseSortKey(b.house) - houseSortKey(a.house);
+    });
+    render();
+  });
+  document.getElementById('prevBtn').addEventListener('click', function() { if (page > 1) { page--; render(); } });
+  document.getElementById('nextBtn').addEventListener('click', function() {
+    var totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    if (page < totalPages) { page++; render(); }
+  });
+  render();
+<\/script>
+</body></html>`;
+            const win = window.open('', '_blank');
+            if (win) {
+                win.document.open();
+                win.document.write(html);
+                win.document.close();
+            }
+        }
+
+        // ---------- Crisis data ----------
+        const crisisData = [
+            {
+                title: "สำรองจ่ายค่าใช้จ่ายประจำ (Fix Costs)",
+                desc: "ยืมเงินลูกบ้านเพื่อชำระค่าน้ำ, ค่าไฟ, เงินเดือน รปภ., แม่บ้าน, คนสวน และพนักงานนิติบุคคล รวม 2 เดือน (ยอดรวม xxx,xxx บาท)",
+                pros: "รักษาระบบสาธารณูปโภคพื้นฐานให้ทำงานต่อเนื่อง",
+                cons: "มีความเสี่ยงทางกฎหมาย หากไม่มีสัญญาเป็นลายลักษณ์อักษร อาจเกิดข้อพิพาทเรื่องดอกเบี้ย ควรเร่งคืนเงินทันทีที่บัญชีใช้งานได้",
+                color: "bg-apple-card",
+                isLarge: true
+            },
+            {
+                title: "แก้ไขปัญหาสระว่ายน้ำ",
+                desc: "ดำเนินการซ่อมแซมฉุกเฉินเพื่อให้สระว่ายน้ำกลับมาใช้งานได้ตามปกติ",
+                pros: "ลูกบ้านสามารถกลับมาใช้งานส่วนกลางได้",
+                cons: "การซ่อมแซมฉุกเฉินอาจมีต้นทุนสูงกว่าปกติเพราะไม่มีเวลาเปรียบเทียบราคา (Bidding)",
+                color: "bg-white border border-gray-200"
+            },
+            {
+                title: "ระบบรายงานกรมควบคุมมลพิษ",
+                desc: "ดำเนินการระบบการตรวจ ส่งข้อมูลการบำบัดน้ำในหมู่บ้านให้ทางราชการ",
+                pros: "หลีกเลี่ยงค่าปรับทางกฎหมาย และลดความเสี่ยงทางการเงินของนิติบุคคลในระยะยาว",
+                cons: "",
+                color: "bg-apple-card"
+            },
+            {
+                title: "ซ่อมแซมกล้องวงจรปิด (CCTV)",
+                desc: "แก้ไขและซ่อมแซมกล้องที่เสียในช่วงรอยต่อ เพื่อรักษามาตรฐานความปลอดภัย",
+                pros: "ฟื้นฟูระบบรักษาความปลอดภัยเบื้องต้น",
+                cons: "อุปกรณ์ที่เสียในช่วงรอยต่อมักเป็นการซ่อมแก้ขัด อาจต้องตั้งงบประมาณเปลี่ยนระบบใหม่หากหมดอายุ",
+                color: "bg-white border border-gray-200"
+            },
+            {
+                title: "ซ่อมระบบรดน้ำในสวน",
+                desc: "แก้ไขระบบรดน้ำต้นไม้ที่เสีย เพื่อรักษาสภาพพื้นที่สีเขียว",
+                pros: "รักษาทัศนียภาพของหมู่บ้านไม่ให้เสื่อมโทรม",
+                cons: "หากระบบท่อเดิมเสื่อมสภาพ การซ่อมจุดหนึ่งอาจนำไปสู่การรั่วในจุดอื่น ต้องประเมินท่อใหม่",
+                color: "bg-apple-card"
+            }
+        ];
+
+        const roadmapData = [
+            {
+                title: "จัดหาบริษัท นิติบุคคลรายใหม่",
+                subtitle: "แทนบริษัท Primo (เนื่องจากทำงานไม่ได้ตามเป้าหมาย)",
+                pros: "มีโอกาสได้บริษัทที่ทำงานเชิงรุกมากขึ้น ตอบสนองต่อปัญหาลูกบ้านได้รวดเร็วขึ้น",
+                cons: "อาจเกิดการสะดุดของข้อมูล (Data Loss) ขาดความต่อเนื่อง และต้องใช้เวลาให้ทีมงานใหม่คุ้นเคยกับระบบ"
+            },
+            {
+                title: "ตัดแต่งกิ่งไม้ทั้งโครงการ",
+                subtitle: "เตรียมการในช่วงฝนหรือพายุเข้า",
+                pros: "บริหารความเสี่ยงเชิงป้องกัน ลดโอกาสต้นไม้ล้มทับทรัพย์สินลูกบ้านหรือสายไฟ ซึ่งค่าเสียหายจะสูงกว่ามาก",
+                cons: "ต้องใช้งบประมาณก้อนใหญ่ในครั้งเดียว และอาจมีลูกบ้านบางส่วนไม่พอใจเรื่องทัศนียภาพหลังตัดแต่ง"
+            },
+            {
+                title: "ประสานงาน 3 หมู่บ้านร่วม",
+                subtitle: "ทำแผนบำรุงถนนสาธารณะหน้าหมู่บ้าน ระบบไฟส่องสว่าง และดูแลสวนส่วนกลาง ตรงบริเวณทางเข้า",
+                pros: "ลดภาระค่าใช้จ่ายของหมู่บ้านเราเพียงฝ่ายเดียว และสร้างมาตรฐานความปลอดภัยร่วมกัน",
+                cons: "การตกลงร่วมกันมีความซับซ้อนสูง มักเกิดความล่าช้าในการอนุมัติงบ และอาจมีข้อพิพาทเรื่องสัดส่วนการจ่ายเงิน"
+            }
+        ];
+
+        // Ribbon Banner (Apple Store Style)
+        const Ribbon = () => (
+            <div className="bg-[#F7F3ED] text-apple-text text-sm text-center py-3 px-4 flex flex-col sm:flex-row justify-center items-center gap-2 border-b border-apple-divider">
+                <span>อัปเดตล่าสุด: ช่วงเปลี่ยนผ่านการบริหาร ตั้งแต่ 24 พ.ค. 2569 - ปัจจุบัน</span>
+                <a href="#budget" className="text-apple-blue hover:underline font-medium">ดูงบประมาณบริหาร &gt;</a>
+            </div>
+        );
+
+        // Sticky Chapter Nav
+        const ChapterNav = () => (
+            <nav className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-apple-divider z-50">
+                <div className="max-w-[1024px] mx-auto px-6 h-14 flex items-center justify-between">
+                    <span className="font-semibold text-xl tracking-tight">นิติบุคคลหมู่บ้าน สีวลี</span>
+                    <div className="hidden md:flex items-center gap-6 text-[12px] font-medium">
+                        <a href="#timeline" className="hover:text-apple-blue transition-colors">ลำดับเหตุการณ์</a>
+                        <a href="#budget" className="hover:text-apple-blue transition-colors">งบประมาณ</a>
+                        <a href="#payment-status" className="hover:text-apple-blue transition-colors">สถานะชำระเงิน</a>
+                        <a href="#crisis" className="hover:text-apple-blue transition-colors">ปัญหาเฉพาะหน้า</a>
+                        <a href="#roadmap" className="hover:text-apple-blue transition-colors">แผนงานอนาคต</a>
+                    </div>
+                </div>
+            </nav>
+        );
+
+        // Timeline Section (Horizontal Scroll like Mac models comparison)
+        const TimelineSection = () => (
+            <section id="timeline" className="py-20 border-b border-apple-divider bg-white">
+                <div className="max-w-[1024px] mx-auto px-6 text-center mb-12">
+                    <h2 className="typography-h2 mb-4">ลำดับเหตุการณ์. ช่วงเปลี่ยนผ่าน.</h2>
+                    <p className="typography-body text-apple-secondary max-w-2xl mx-auto">
+                        ความโปร่งใสคือสิ่งสำคัญที่สุด นี่คือไทม์ไลน์แสดงสถานะทางกฎหมายและการเงินตั้งแต่การเลือกตั้งกรรมการชุดใหม่ จนถึงการได้รับมอบอำนาจบริหารอย่างสมบูรณ์
+                    </p>
+                </div>
+
+                <p className="sm:hidden text-center text-xs text-apple-secondary mb-3 flex items-center justify-center gap-1">
+                    เลื่อนซ้าย-ขวาเพื่อดูเหตุการณ์ทั้งหมด
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                </p>
+                <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 overflow-x-auto sm:overflow-visible hide-scrollbar gap-6 pb-8 snap-x snap-mandatory px-6 md:px-12 max-w-[1200px] mx-auto">
+                    {timelineData.map((item) => (
+                        <div key={item.id} className="snap-center shrink-0 w-[280px] sm:w-auto bg-apple-card rounded-[24px] p-8 flex flex-col items-center text-center apple-card-hover relative">
+                            {item.status === 'current' && (
+                                <span className="absolute top-4 right-4 flex h-3 w-3">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-apple-blue opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-apple-blue"></span>
+                                </span>
+                            )}
+                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm text-apple-text">
+                                <Icon name={item.icon} className="w-8 h-8" />
+                            </div>
+                            <h3 className="typography-h3 mb-2">{item.title}</h3>
+                            <p className="text-apple-blue font-medium text-sm mb-4">วันที่: {item.date}</p>
+                            <p className="typography-body text-apple-secondary text-sm flex-grow">{item.desc}</p>
+                        </div>
+                    ))}
+                </div>
+            </section>
+        );
+
+        // ---------- Donut chart (pure SVG, data-driven) ----------
+        const DonutChart = ({ data, total, size = 260, thickness = 34 }) => {
+            const radius = (size - thickness) / 2;
+            const circumference = 2 * Math.PI * radius;
+            let cumulative = 0;
+            return (
+                <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[280px] mx-auto h-auto">
+                    <g transform={`rotate(-90 ${size / 2} ${size / 2})`}>
+                        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#F7F3ED" strokeWidth={thickness} />
+                        {data.map((d, i) => {
+                            const value = (d.amount / total) * circumference;
+                            const dasharray = `${value} ${circumference - value}`;
+                            const dashoffset = -cumulative;
+                            cumulative += value;
+                            return (
+                                <circle
+                                    key={d.key}
+                                    cx={size / 2}
+                                    cy={size / 2}
+                                    r={radius}
+                                    fill="none"
+                                    stroke={d.color}
+                                    strokeWidth={thickness}
+                                    strokeDasharray={dasharray}
+                                    strokeDashoffset={dashoffset}
+                                >
+                                    <title>{`${d.label}: ${formatBaht(d.amount)} บาท/ปี (${formatPct(d.amount / total)})`}</title>
+                                </circle>
+                            );
+                        })}
+                    </g>
+                    <text x="50%" y="46%" textAnchor="middle" style={{ fontSize: 12, fontWeight: 500, fill: '#7A7570', fontFamily: 'Prompt, sans-serif' }}>
+                        รวมค่าใช้จ่าย/ปี
+                    </text>
+                    <text x="50%" y="58%" textAnchor="middle" style={{ fontSize: 17, fontWeight: 700, fill: '#2C2A3F', fontFamily: 'Prompt, sans-serif' }}>
+                        {formatBaht(total)} ฿
+                    </text>
+                </svg>
+            );
+        };
+
+        // ---------- Legend / breakdown table shared by donut + bar chart ----------
+        const BudgetLegend = ({ data, total }) => (
+            <div className="divide-y divide-apple-divider">
+                {data.map((d) => (
+                    <div key={d.key} className="flex items-center justify-between gap-3 py-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <span className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: d.color }}></span>
+                            <span className="text-sm text-apple-text truncate">{d.label}</span>
+                        </div>
+                        <div className="flex items-baseline gap-2 shrink-0">
+                            <span className="text-sm font-semibold text-apple-text">{formatBaht(d.amount)}</span>
+                            <span className="text-xs text-apple-secondary w-12 text-right">{formatPct(d.amount / total)}</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+
+        // ---------- Scenario comparison bars ----------
+        const ScenarioBars = ({ selected, onSelect }) => (
+            <div className="space-y-5">
+                {scenarios.map((s) => {
+                    const remaining = s.income - totalExpense;
+                    const isSelected = s.key === selected;
+                    return (
+                        <button
+                            key={s.key}
+                            onClick={() => onSelect(s.key)}
+                            className={`w-full text-left rounded-2xl p-4 transition-all ${isSelected ? 'bg-apple-card ring-2 ring-apple-blue' : 'bg-white hover:bg-apple-card/60'}`}
+                        >
+                            <div className="flex items-center justify-between mb-2 text-sm">
+                                <span className="font-semibold text-apple-text">{s.label} ({s.shortLabel})</span>
+                                <span className="text-apple-secondary">รายรับ {formatBaht(s.income)} บาท/ปี</span>
+                            </div>
+                            <div className="relative">
+                                <div
+                                    className="flex h-9 rounded-full overflow-hidden shadow-sm"
+                                    style={{ width: `${(s.income / maxScale) * 100}%` }}
+                                >
+                                    {budgetCategories.map((c) => (
+                                        <div
+                                            key={c.key}
+                                            style={{ width: `${(c.amount / s.income) * 100}%`, backgroundColor: c.color }}
+                                            title={`${c.label}: ${formatBaht(c.amount)} บาท`}
+                                        ></div>
+                                    ))}
+                                    <div
+                                        style={{ width: `${(remaining / s.income) * 100}%`, backgroundColor: remainingColor }}
+                                        title={`เงินคงเหลือที่ใช้ได้: ${formatBaht(remaining)} บาท`}
+                                    ></div>
+                                </div>
+                            </div>
+                        </button>
+                    );
+                })}
+                {/* Axis */}
+                <div className="relative h-5 mt-2">
+                    {axisTicks.map((t) => (
+                        <span
+                            key={t}
+                            className="absolute text-[11px] text-apple-secondary -translate-x-1/2"
+                            style={{ left: `${(t / maxScale) * 100}%` }}
+                        >
+                            {t === 0 ? '0' : (t / 1000000) + 'ล.'}
+                        </span>
+                    ))}
+                </div>
+            </div>
+        );
+
+        // ---------- "ค่าใช้จ่ายประจำปี อื่นๆ" breakdown ----------
+        const OtherExpenseBreakdown = ({ item }) => (
+            <div className="rounded-[28px] p-8 md:p-10 bg-apple-card">
+                <div className="flex items-center gap-3 mb-2">
+                    <span className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: item.color }}></span>
+                    <h3 className="typography-h3">{item.label}</h3>
+                </div>
+                <p className="text-sm text-apple-secondary mb-6">
+                    รวม {formatBaht(item.amount)} บาท/ปี — คิดเป็น {formatPct(item.amount / totalExpense)} ของค่าใช้จ่ายรวมทั้งหมด
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {item.breakdown.map((b) => (
+                        <div key={b.label} className="bg-white rounded-2xl p-5 flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-apple-card flex items-center justify-center shrink-0 text-apple-text">
+                                <Icon name={b.icon} className="w-5 h-5" />
+                            </div>
+                            <p className="text-sm font-medium text-apple-text">{b.label}</p>
+                        </div>
+                    ))}
+                </div>
+                <p className="text-xs text-apple-secondary mt-6">
+                    * รายการข้างต้นเป็นรายการค่าใช้จ่ายประจำปีอื่นๆ ภายใต้ยอดรวม {formatBaht(item.amount)} บาท/ปี อ้างอิงจากไฟล์งบประมาณที่แนบ
+                    ตัวเลขค่าใช้จ่ายจริงของแต่ละรายการจะแจ้งให้ทราบเมื่อได้รับใบเสนอราคาในแต่ละปี
+                </p>
+            </div>
+        );
+
+        // ---------- Summary cards for selected scenario ----------
+        const SummaryCards = ({ scenario }) => {
+            const remaining = scenario.income - totalExpense;
+            const cards = [
+                { label: 'รายรับรวม (' + scenario.shortLabel + ')', value: scenario.income, color: '#926AA8' },
+                { label: 'ค่าใช้จ่ายรวมทั้งหมด', value: totalExpense, color: '#DC3853' },
+                { label: 'เงินคงเหลือที่ใช้ได้', value: remaining, color: '#728F71' }
+            ];
+            return (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {cards.map((c) => (
+                        <div key={c.label} className="bg-white border border-apple-divider rounded-2xl p-6">
+                            <p className="text-sm text-apple-secondary mb-2">{c.label}</p>
+                            <p className="text-2xl font-semibold" style={{ color: c.color }}>{formatBaht(c.value)}</p>
+                            <p className="text-xs text-apple-secondary mt-1">บาท/ปี</p>
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        // Budget Section (dynamic dashboard)
+        const BudgetSection = () => {
+            const [selected, setSelected] = useState('full');
+            const selectedScenario = scenarios.find((s) => s.key === selected);
+            const otherItem = budgetCategories.find((c) => c.key === 'annualOther');
+
+            return (
+                <section id="budget" className="py-24 bg-white border-b border-apple-divider">
+                    <div className="max-w-[1024px] mx-auto px-6">
+                        <div className="text-center mb-16">
+                            <div className="w-14 h-14 rounded-full bg-apple-card flex items-center justify-center mx-auto mb-5 text-apple-blue">
+                                <Icon name="coins" className="w-7 h-7" />
+                            </div>
+                            <h2 className="typography-h2 mb-4">งบประมาณบริหาร หมู่บ้าน สีวลี</h2>
+                            <p className="typography-body text-apple-secondary max-w-2xl mx-auto">
+                                สัดส่วนค่าใช้จ่ายหลักในการบริหารต่อปี และการเปรียบเทียบ 3 สถานการณ์การจัดเก็บค่าส่วนกลาง เพื่อความโปร่งใสในการบริหารงบประมาณ
+                            </p>
+                        </div>
+
+                        {/* Donut + legend */}
+                        <div className="grid md:grid-cols-2 gap-10 items-center mb-8">
+                            <DonutChart data={budgetCategories} total={totalExpense} />
+                            <BudgetLegend data={budgetCategories} total={totalExpense} />
+                        </div>
+                        <p className="text-xs text-apple-secondary text-center mb-16">
+                            ยังไม่รวมค่าใช้จ่ายที่เป็นการบำรุงรักษาส่วนกลางกรณีพิเศษ ตัวเลขค่าน้ำและค่าไฟฟ้าเป็นค่าเฉลี่ยจากสถิติในอดีต อาจปรับเปลี่ยนได้ตามการใช้งานจริง
+                        </p>
+
+                        {/* Other expense breakdown */}
+                        <div className="mb-16">
+                            <OtherExpenseBreakdown item={otherItem} />
+                        </div>
+
+                        {/* Scenario comparison */}
+                        <div className="grid md:grid-cols-3 gap-10">
+                            <div className="md:col-span-2">
+                                <h3 className="typography-h3 mb-1">รายรับเทียบกับค่าใช้จ่าย และเงินคงเหลือ</h3>
+                                <p className="text-sm text-apple-secondary mb-6">แตะแถบเพื่อเลือกดูสถานการณ์การจัดเก็บค่าส่วนกลาง</p>
+                                <ScenarioBars selected={selected} onSelect={setSelected} />
+                            </div>
+                            <div className="bg-[#F9E199]/40 rounded-[28px] p-8">
+                                <h4 className="font-semibold text-apple-text mb-3">ภาพรวมค่าใช้จ่ายทั้งหมด ต่อปี</h4>
+                                <p className="text-sm text-apple-secondary mb-4">เปรียบเทียบ 3 สถานการณ์การจัดเก็บค่าส่วนกลาง:</p>
+                                <ul className="text-sm text-apple-secondary space-y-2 list-disc list-inside">
+                                    <li>รายรับเต็มจำนวน (100%)</li>
+                                    <li>จัดเก็บได้ 95%</li>
+                                    <li>จัดเก็บได้ 90%</li>
+                                </ul>
+                                <p className="text-sm text-apple-secondary mt-4">
+                                    รวมค่าใช้จ่ายแยกตามหมวด เปรียบเทียบกับยอดเงินที่ใช้ได้ (สีเขียว) ในแต่ละสถานการณ์การจัดเก็บ
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Summary cards for the selected scenario */}
+                        <div className="mt-10">
+                            <SummaryCards scenario={selectedScenario} />
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        // ---------- Pie chart (2 slices, clickable + hoverable) ----------
+        const PieChart = ({ onSliceClick, onSliceHover, hovered }) => {
+            const size = 260;
+            const cx = size / 2, cy = size / 2, r = size / 2 - 6;
+            const paidRatio = paidHouses.length / paymentTotal;
+            const paidAngle = paidRatio * 360;
+
+            function polarToCartesian(angleDeg) {
+                const a = ((angleDeg - 90) * Math.PI) / 180;
+                return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+            }
+            function arcPath(startAngle, endAngle) {
+                const [x1, y1] = polarToCartesian(startAngle);
+                const [x2, y2] = polarToCartesian(endAngle);
+                const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+                return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+            }
+
+            const slices = [
+                { key: 'จ่ายแล้ว', start: 0, end: paidAngle, color: PAID_COLOR, count: paidHouses.length },
+                { key: 'ยังไม่ได้จ่าย', start: paidAngle, end: 360, color: UNPAID_COLOR, count: unpaidHouses.length }
+            ];
+
+            return (
+                <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[280px] mx-auto h-auto">
+                    {slices.map((s) => (
+                        <path
+                            key={s.key}
+                            d={arcPath(s.start, s.end)}
+                            fill={s.color}
+                            opacity={hovered && hovered !== s.key ? 0.55 : 1}
+                            stroke="#fff"
+                            strokeWidth="2"
+                            className="cursor-pointer transition-opacity"
+                            onClick={() => onSliceClick(s.key)}
+                            onMouseEnter={() => onSliceHover(s.key)}
+                            onMouseLeave={() => onSliceHover(null)}
+                        >
+                            <title>{`${s.key}: ${s.count} หลัง (${formatPct(s.count / paymentTotal)})`}</title>
+                        </path>
+                    ))}
+                </svg>
+            );
+        };
+
+        // Payment Status Popup
+        const PaymentPopup = ({ result, onClose }) => {
+            if (!result) return null;
+            const isPaid = result.status === 'จ่ายแล้ว';
+            const message = isPaid
+                ? 'ขอบคุณที่ชำระค่าส่วนกลาง'
+                : 'ท่านยังไม่ได้ชำระค่าส่วนกลาง โปรดชำระภายในวันที่ 31 ก.ค. 2569 หากชำระแล้วให้ติดต่อ นิติ.';
+            return (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100] px-6" onClick={onClose}>
+                    <div
+                        className="bg-white rounded-[24px] p-8 max-w-sm w-full text-center shadow-xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div
+                            className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
+                            style={{ backgroundColor: isPaid ? '#E7F6EC' : '#FCE8EB' }}
+                        >
+                            <Icon
+                                name={isPaid ? 'check' : 'alert'}
+                                className="w-7 h-7"
+                                style={{ color: isPaid ? PAID_COLOR : UNPAID_COLOR }}
+                            />
+                        </div>
+                        <p className="text-sm text-apple-secondary mb-1">บ้านเลขที่ {result.house}</p>
+                        <p className="typography-h3 mb-3">{message}</p>
+                        <button
+                            onClick={onClose}
+                            className="mt-2 bg-apple-blue hover:bg-apple-blueHover text-white px-6 py-2 rounded-full text-sm font-medium transition-colors"
+                        >
+                            ปิด
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // Payment Status Section
+        const PaymentStatusSection = () => {
+            const [query, setQuery] = useState('');
+            const [searchResult, setSearchResult] = useState(undefined); // undefined = no search yet, null = not found, obj = found
+            const [popupResult, setPopupResult] = useState(null);
+            const [hovered, setHovered] = useState(null);
+
+            const paidPct = paidHouses.length / paymentTotal;
+            const unpaidPct = unpaidHouses.length / paymentTotal;
+
+            const handleSearch = () => {
+                const found = findHouse(query);
+                setSearchResult(found);
+            };
+
+            return (
+                <section id="payment-status" className="py-24 bg-white border-b border-apple-divider">
+                    <div className="max-w-[1024px] mx-auto px-6">
+                        <div className="text-center mb-14">
+                            <div className="w-14 h-14 rounded-full bg-apple-card flex items-center justify-center mx-auto mb-5 text-apple-blue">
+                                <Icon name="pie" className="w-7 h-7" />
+                            </div>
+                            <h2 className="typography-h2 mb-4">สถานะการชำระค่าส่วนกลาง</h2>
+                            <p className="typography-body text-apple-secondary max-w-2xl mx-auto">
+                                ตรวจสอบสถานะการชำระค่าส่วนกลางของบ้านท่าน หรือดูภาพรวมทั้งหมู่บ้าน — ข้อมูลอัปเดตล่าสุดจากฝ่ายบัญชีนิติบุคคล
+                            </p>
+                        </div>
+
+                        {/* Search box */}
+                        <div className="max-w-xl mx-auto mb-6">
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <input
+                                    type="text"
+                                    value={query}
+                                    onChange={(e) => setQuery(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+                                    placeholder="ค้นหาบ้านเลขที่ เช่น 456/123 หรือ 123"
+                                    className="flex-grow border border-apple-divider rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-apple-blue"
+                                />
+                                <button
+                                    onClick={handleSearch}
+                                    className="bg-apple-blue hover:bg-apple-blueHover text-white px-6 py-3 rounded-full text-sm font-medium transition-colors shrink-0"
+                                >
+                                    ค้นหา
+                                </button>
+                            </div>
+
+                            {/* Search result */}
+                            {searchResult === null && (
+                                <div className="mt-4 bg-apple-card rounded-2xl p-5 text-sm text-apple-secondary text-center">
+                                    ไม่พบบ้านเลขที่ "{query}" ในระบบ กรุณาตรวจสอบเลขที่อีกครั้ง
+                                </div>
+                            )}
+                            {searchResult && (
+                                <div className="mt-4 bg-apple-card rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
+                                        <span className="text-apple-secondary">บ้านเลขที่</span>
+                                        <span className="font-semibold text-apple-text">{searchResult.house}</span>
+                                        <span className="text-apple-secondary">ชื่อเจ้าของบ้าน</span>
+                                        <span className="font-semibold text-apple-text">— (ไม่มีข้อมูลในไฟล์)</span>
+                                        <span className="text-apple-secondary">สถานะการชำระ</span>
+                                        <span
+                                            className="font-semibold px-2.5 py-0.5 rounded-full text-white text-xs w-fit"
+                                            style={{ backgroundColor: searchResult.status === 'จ่ายแล้ว' ? PAID_COLOR : UNPAID_COLOR }}
+                                        >
+                                            {searchResult.status}
+                                        </span>
+                                    </div>
+                                    <button
+                                        onClick={() => setPopupResult(searchResult)}
+                                        className="bg-white border border-apple-divider hover:bg-white/60 px-5 py-2 rounded-full text-sm font-medium transition-colors shrink-0"
+                                    >
+                                        ดูรายละเอียด
+                                    </button>
+                                </div>
+                            )}
+                            <p className="text-xs text-apple-secondary text-center mt-3">
+                                * ไฟล์ข้อมูลที่แนบมามีเฉพาะเลขที่บ้านและสถานะการชำระ ยังไม่มีคอลัมน์ชื่อเจ้าของบ้าน หากเพิ่มข้อมูลชื่อในไฟล์ Excel ภายหลัง ระบบจะแสดงผลให้อัตโนมัติ
+                            </p>
+                        </div>
+
+                        {/* Pie chart + legend */}
+                        <div className="grid md:grid-cols-2 gap-10 items-center mt-16">
+                            <PieChart
+                                onSliceClick={(status) => openHouseListWindow(status)}
+                                onSliceHover={setHovered}
+                                hovered={hovered}
+                            />
+                            <div className="space-y-3">
+                                {[
+                                    { key: 'จ่ายแล้ว', count: paidHouses.length, pct: paidPct, color: PAID_COLOR },
+                                    { key: 'ยังไม่ได้จ่าย', count: unpaidHouses.length, pct: unpaidPct, color: UNPAID_COLOR }
+                                ].map((s) => (
+                                    <button
+                                        key={s.key}
+                                        onClick={() => openHouseListWindow(s.key)}
+                                        onMouseEnter={() => setHovered(s.key)}
+                                        onMouseLeave={() => setHovered(null)}
+                                        className={`w-full text-left rounded-2xl p-5 flex items-center justify-between transition-colors ${hovered === s.key ? 'bg-apple-card' : 'bg-white hover:bg-apple-card/60'} border border-apple-divider`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <span className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: s.color }}></span>
+                                            <span className="text-sm font-medium text-apple-text">{s.key}</span>
+                                        </div>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-lg font-semibold" style={{ color: s.color }}>{s.count}</span>
+                                            <span className="text-xs text-apple-secondary">หลัง ({formatPct(s.pct)})</span>
+                                        </div>
+                                    </button>
+                                ))}
+                                <p className="text-xs text-apple-secondary pt-2">
+                                    รวมทั้งหมด {paymentTotal} หลัง • คลิกที่กราฟหรือรายการเพื่อดูรายชื่อบ้านเลขที่ทั้งหมดในแท็บใหม่ (ค้นหา/เรียงลำดับ/แบ่งหน้าได้)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <PaymentPopup result={popupResult} onClose={() => setPopupResult(null)} />
+                </section>
+            );
+        };
+
+        // Crisis Management Section (Grid layout like Mac Accessories)
+        const CrisisSection = () => (
+            <section id="crisis" className="py-24 bg-[#f5f5f7]">
+                <div className="max-w-[1024px] mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <h2 className="typography-h2 mb-4">การแก้ปัญหาเฉพาะหน้า.</h2>
+                        <p className="typography-body text-apple-secondary max-w-2xl mx-auto">
+                            ระหว่างรอการเข้าถึงบัญชีธนาคาร (ช่วงสุญญากาศทางการเงิน) คณะกรรมการได้ดำเนินการแก้ไขปัญหาเร่งด่วนเพื่อไม่ให้กระทบต่อคุณภาพชีวิตของลูกบ้าน
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {crisisData.map((item, idx) => (
+                            <div key={idx} className={`${item.color} rounded-[28px] p-8 md:p-10 ${item.isLarge ? 'md:col-span-2' : ''} apple-card-hover`}>
+                                <h3 className="typography-h3 mb-4">{item.title}</h3>
+                                <p className="typography-body text-apple-secondary mb-8">{item.desc}</p>
+
+                                <div className="space-y-4">
+                                    {item.pros && (
+                                        <div className="flex gap-3 items-start">
+                                            <Icon name="check" className="w-5 h-5 text-apple-green shrink-0 mt-0.5" />
+                                            <div>
+                                                <span className="text-sm font-semibold text-apple-text block">ผลดีที่จะได้รับ</span>
+                                                <span className="text-sm text-apple-secondary">{item.pros}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {item.cons && (
+                                        <div className="flex gap-3 items-start">
+                                            <Icon name="alert" className="w-5 h-5 text-apple-orange shrink-0 mt-0.5" />
+                                            <div>
+                                                <span className="text-sm font-semibold text-apple-text block">ข้อควรระวัง / ความเสี่ยง</span>
+                                                <span className="text-sm text-apple-secondary">{item.cons}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+
+        // Roadmap Section (Stacked wide cards)
+        const RoadmapSection = () => (
+            <section id="roadmap" className="py-24 bg-white">
+                <div className="max-w-[1024px] mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <h2 className="typography-h2 mb-4">แผนงานครึ่งปีหลัง 2026.</h2>
+                        <p className="typography-body text-apple-secondary max-w-2xl mx-auto">
+                            วิสัยทัศน์และทิศทางการดำเนินงานเพื่อการพัฒนาที่ยั่งยืน พร้อมการประเมินความเสี่ยงอย่างรอบด้าน
+                        </p>
+                    </div>
+
+                    <div className="space-y-6">
+                        {roadmapData.map((plan, idx) => (
+                            <div key={idx} className="bg-apple-card rounded-[28px] p-8 md:p-12 apple-card-hover shadow-sm">
+                                <div className="md:flex justify-between items-start gap-8 mb-8">
+                                    <div className="mb-4 md:mb-0">
+                                        <h3 className="typography-h3 mb-2">{plan.title}</h3>
+                                        <p className="text-apple-blue font-medium">{plan.subtitle}</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-apple-divider">
+                                    <div>
+                                        <div className="text-apple-green font-semibold mb-2 flex items-center gap-2">
+                                            <Icon name="check" className="w-5 h-5" /> ข้อดี
+                                        </div>
+                                        <p className="text-sm text-apple-secondary leading-relaxed">{plan.pros}</p>
+                                    </div>
+                                    <div>
+                                        <div className="text-apple-orange font-semibold mb-2 flex items-center gap-2">
+                                            <Icon name="alert" className="w-5 h-5" /> ข้อพิจารณา / ความเสี่ยง
+                                        </div>
+                                        <p className="text-sm text-apple-secondary leading-relaxed">{plan.cons}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+
+        const App = () => {
+            return (
+                <div className="min-h-screen">
+                    <Ribbon />
+                    <ChapterNav />
+
+                    <main>
+                        {/* Hero Section */}
+                        <section className="pt-24 pb-16 px-6 text-center max-w-[1024px] mx-auto">
+                            <h1 className="typography-hero mb-6">
+                                สรุปการดำเนินงาน<br/>
+                                และงบประมาณบริหาร
+                            </h1>
+                            <p className="typography-body max-w-3xl mx-auto mt-4 text-apple-text text-lg md:text-xl">
+                                รายงานฉบับนี้จัดทำขึ้นเพื่อสื่อสารการดำเนินงานของคณะกรรมการชุดใหม่ ชี้แจงการแก้ปัญหาในช่วงรอยต่อ
+                                และกำหนดแผนงานอนาคตบนพื้นฐานของความเป็นจริง
+                            </p>
+                        </section>
+
+                        <TimelineSection />
+                        <BudgetSection />
+                        <PaymentStatusSection />
+                        <CrisisSection />
+                        <RoadmapSection />
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="bg-white py-12 border-t border-apple-divider text-center">
+                        <div className="max-w-[1024px] mx-auto px-6 text-xs text-apple-secondary space-y-2">
+                            <p>จัดทำโดย คณะกรรมการหมู่บ้านชุดใหม่ • ข้อมูลอัปเดต ณ เดือนกรกฎาคม 2026</p>
+                            <p>เอกสารฉบับนี้ใช้สำหรับการสื่อสารภายในหมู่บ้านเท่านั้น เพื่อความเข้าใจตรงกันและโปร่งใสในการบริหารงาน</p>
+                            <p>
+                                เวอร์ชันออนไลน์อัปเดตล่าสุดที่{' '}
+                                <a
+                                    href="https://village-update-2026.tiiny.site/#roadmap"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-apple-blue hover:underline font-medium"
+                                >
+                                    village-update-2026.tiiny.site
+                                </a>
+                            </p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
