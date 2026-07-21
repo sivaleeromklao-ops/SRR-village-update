@@ -115,13 +115,24 @@
         .apple-card-hover:hover {
             transform: scale(1.015);
         }
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        .team-photo-card {
+            transition: transform 0.4s cubic-bezier(0, 0, 0.5, 1), box-shadow 0.4s ease;
+        }
+        .team-photo-card:hover {
+            transform: scale(1.01) translateY(-4px);
+            box-shadow: 0 20px 40px -12px rgba(44, 42, 63, 0.25);
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useMemo } = React;
+        const { useState, useMemo, useEffect } = React;
 
         // ---------- Helpers ----------
         function formatBaht(n) {
@@ -160,9 +171,9 @@
         // ---------- Timeline data ----------
         const timelineData = [
             { id: 1, date: "24 พ.ค. 2569", title: "เลือกตั้งกรรมการชุดใหม่", desc: "แทนที่กรรมการชุดเดิมที่ลาออก ถือเป็นจุดเริ่มต้นของการรับมอบอำนาจบริหาร", status: "completed", icon: "calendar" },
-            { id: 2, date: "26 มิ.ย. 2569", title: "กรมที่ดินออกหนังสือรับรอง", desc: "คณะกรรมการชุดใหม่มีสถานะทางกฎหมายอย่างสมบูรณ์ในการทำธุรกรรมบริหารจัดการ", status: "completed", icon: "info" },
-            { id: 3, date: "25 มิ.ย. 2569 - 31 ก.ค. 2569", title: "รอยต่อกับ Primo", desc: "ช่วงเปลี่ยนผ่านการบริหารจัดการจากบริษัท Primo มาสู่บริษัทบริหารชุดใหม่ เพื่อเตรียมความพร้อมด้านเอกสารและข้อมูลบัญชี", status: "current", icon: "building" },
-            { id: 4, date: "04 ก.ค. 2569", title: "คืนเงินทดรองจ่าย+เปลี่ยนอำนาจกรรมการที่ธนาคาร", desc: "สิ้นสุดช่วงสุญญากาศ กรรมการสามารถเข้าถึงบัญชีและบริหารงบได้เต็มรูปแบบ", status: "pending", icon: "bank" }
+            { id: 2, date: "12 ก.ค. 2569 - 31 ก.ค. 2569", title: "กรมที่ดินออกหนังสือรับรอง", desc: "คณะกรรมการชุดใหม่มีสถานะทางกฎหมายอย่างสมบูรณ์ในการทำธุรกรรมบริหารจัดการ", status: "completed", icon: "info" },
+            { id: 3, date: "12 ก.ค. 2569 - 31 ก.ค. 2569", title: "รอยต่อกับ Primo", desc: "ช่วงเปลี่ยนผ่านการบริหารจัดการจากบริษัท Primo มาสู่คณะกรรมการชุดใหม่ เพื่อเตรียมความพร้อมด้านเอกสารและข้อมูลบัญชี", status: "current", icon: "building" },
+            { id: 4, date: "12 ก.ค. 2569", title: "ธนาคารเปลี่ยนอำนาจ", desc: "สิ้นสุดช่วงสุญญากาศ กรรมการสามารถเข้าถึงบัญชีและบริหารงบได้เต็มรูปแบบ", status: "pending", icon: "bank" }
         ];
 
         // ---------- Budget data (from แนบไฟล์ Excel ตารางเปรียบเทียบ) ----------
@@ -199,15 +210,18 @@
 
         // ---------- Payment status data (from ไฟล์ SRR_Status_ค่าส่วนกลาง) ----------
         // 'P' = จ่ายแล้ว, 'U' = ยังไม่ได้จ่าย
-        const paymentDataRaw = [['456/1','P'],['456/2','P'],['456/3','P'],['456/4','U'],['456/5','U'],['456/6','P'],['456/7','P'],['456/8','P'],['456/9','U'],['456/10','U'],['456/11','P'],['456/12','U'],['456/14','P'],['456/15','P'],['456/16','U'],['456/17','P'],['456/18','U'],['456/19','U'],['456/20','P'],['456/21','P'],['456/22','P'],['456/23','P'],['456/24','P'],['456/25','P'],['456/26','P'],['456/27','P'],['456/28','U'],['456/29','P'],['456/30','P'],['456/31','U'],['456/32','U'],['456/33','P'],['456/34','P'],['456/35','U'],['456/36','P'],['456/37','P'],['456/38','U'],['456/39','P'],['456/40','P'],['456/41','P'],['456/42','U'],['456/43','P'],['456/44','U'],['456/45','P'],['456/46','P'],['456/47','P'],['456/48','P'],['456/49','P'],['456/50','U'],['456/51','U'],['456/52','U'],['456/53','P'],['456/54','U'],['456/55','U'],['456/56','P'],['456/57','U'],['456/58','P'],['456/59','P'],['456/60','U'],['456/61','U'],['456/62','P'],['456/63','P'],['456/64','P'],['456/65','P'],['456/67','U'],['456/68','P'],['456/69','P'],['456/70','P'],['456/71','U'],['456/72','U'],['456/73','P'],['456/74','U'],['456/75','P'],['456/76','P'],['456/77','U'],['456/78','P'],['456/79','U'],['456/80','P'],['456/81','P'],['456/82','U'],['456/83','P'],['456/84','P'],['456/85','U'],['456/86','P'],['456/87','U'],['456/88','P'],['456/89','U'],['456/90','P'],['456/91','P'],['456/92','U'],['456/93','P'],['456/94','U'],['456/95','U'],['456/96','P'],['456/97','U'],['456/98','U'],['456/99','P'],['456/100','U'],['456/101','U'],['456/102','U'],['456/103','U'],['456/104','P'],['456/105','P'],['456/106','U'],['456/107','P'],['456/108','U'],['456/109','P'],['456/110','U'],['456/111','U'],['456/112','P'],['456/113','P'],['456/114','P'],['456/115','U'],['456/116','U'],['456/117','P'],['456/118','U'],['456/119','P'],['456/120','P'],['456/121','U'],['456/122','U'],['456/123','P'],['456/124','P'],['456/125','U'],['456/126','P'],['456/127','P'],['456/128','P'],['456/129','U'],['456/130','U'],['456/131','P'],['456/132','P'],['456/133','U'],['456/134','U'],['456/135','P'],['456/136','U'],['456/137','U'],['456/138','U'],['456/139','U'],['456/140','U'],['456/141','U'],['456/142','P'],['456/143','P'],['456/144','U'],['456/145','P'],['456/146','P'],['456/147','P'],['456/148','U'],['456/149','P'],['456/150','P'],['456/151','P'],['456/152','P'],['456/153','U'],['456/154','U'],['456/155','U'],['456/156','U'],['456/157','P'],['456/158','P'],['456/159','U'],['456/160','P'],['456/161','P'],['456/162','P'],['456/163','U'],['456/164','P'],['456/165','U'],['456/166','U'],['456/167','P'],['456/168','U'],['456/169','P'],['456/170','P'],['456/171','P'],['456/172','P'],['456/173','P'],['456/174','P'],['456/175','P'],['456/176','U'],['456/177','U'],['456/178','P'],['456/179','P'],['456/180','P'],['456/181','P'],['456/182','U'],['456/183','P'],['456/184','U'],['456/185','P'],['456/186','P'],['456/187','U'],['456/188','P'],['456/189','U'],['456/190','P'],['456/191','P'],['456/192','P'],['456/193','P'],['456/194','U'],['456/195','P'],['456/196','U'],['456/197','U'],['456/198','U'],['456/199','P'],['456/200','P'],['456/201','P'],['456/202','P'],['456/203','U'],['456/204','U'],['456/205','P'],['456/206','U'],['456/207','P'],['456/208','P'],['456/209','U'],['456/210','P'],['456/211','P'],['456/212','U'],['456/213','P'],['456/214','U'],['456/215','U'],['456/216','U'],['456/217','P'],['456/218','U'],['456/219','U'],['456/220','P'],['456/221','U'],['456/222','P'],['456/223','P'],['456/224','P'],['456/225','U'],['456/226','P'],['456/227','P'],['456/228','P'],['456/229','U'],['456/230','U'],['456/231','U'],['456/232','U'],['456/233','U'],['456/234','U'],['456/235','U'],['456/236','P'],['456/237','U'],['456/238','P'],['456/239','P'],['456/240','U'],['456/241','U'],['456/242','P'],['456/243','P'],['456/244','P'],['456/245','P'],['456/246','P'],['456/247','U'],['456/248','U'],['456/249','P'],['456/250','P'],['456/251','P'],['456/252','U'],['456/253','U'],['456/254','P'],['456/255','U'],['456/256','P'],['456/257','P'],['456/258','P'],['456/259','U'],['456/260','P'],['456/261','U'],['456/262','U']];
+        const paymentDataRaw = [['456/1','P'],['456/2','P'],['456/3','P'],['456/4','U'],['456/5','U'],['456/6','P'],['456/7','P'],['456/8','P'],['456/9','U'],['456/10','U'],['456/11','P'],['456/12','U'],['456/14','P'],['456/15','P'],['456/16','U'],['456/17','P'],['456/18','U'],['456/19','U'],['456/20','P'],['456/21','P'],['456/22','P'],['456/23','P'],['456/24','P'],['456/25','P'],['456/26','P'],['456/27','P'],['456/28','U'],['456/29','P'],['456/30','P'],['456/31','U'],['456/32','U'],['456/33','P'],['456/34','P'],['456/35','U'],['456/36','P'],['456/37','P'],['456/38','U'],['456/39','P'],['456/40','P'],['456/41','P'],['456/42','U'],['456/43','P'],['456/44','U'],['456/45','P'],['456/46','P'],['456/47','P'],['456/48','P'],['456/49','P'],['456/50','U'],['456/51','U'],['456/52','U'],['456/53','P'],['456/54','U'],['456/55','U'],['456/56','P'],['456/57','U'],['456/58','P'],['456/59','P'],['456/60','U'],['456/61','U'],['456/62','P'],['456/63','P'],['456/64','P'],['456/65','P'],['456/67','U'],['456/68','P'],['456/69','P'],['456/70','P'],['456/71','U'],['456/72','U'],['456/73','P'],['456/74','U'],['456/75','P'],['456/76','P'],['456/77','U'],['456/78','P'],['456/79','U'],['456/80','P'],['456/81','P'],['456/82','U'],['456/83','P'],['456/84','P'],['456/85','U'],['456/86','P'],['456/87','U'],['456/88','P'],['456/89','U'],['456/90','P'],['456/91','P'],['456/92','U'],['456/93','P'],['456/94','U'],['456/95','U'],['456/96','P'],['456/97','P'],['456/98','U'],['456/99','P'],['456/100','U'],['456/101','U'],['456/102','U'],['456/103','U'],['456/104','P'],['456/105','P'],['456/106','U'],['456/107','P'],['456/108','U'],['456/109','P'],['456/110','U'],['456/111','U'],['456/112','P'],['456/113','P'],['456/114','P'],['456/115','P'],['456/116','U'],['456/117','P'],['456/118','U'],['456/119','P'],['456/120','P'],['456/121','U'],['456/122','U'],['456/123','P'],['456/124','P'],['456/125','U'],['456/126','P'],['456/127','P'],['456/128','P'],['456/129','U'],['456/130','U'],['456/131','P'],['456/132','P'],['456/133','U'],['456/134','U'],['456/135','P'],['456/136','U'],['456/137','U'],['456/138','U'],['456/139','U'],['456/140','U'],['456/141','U'],['456/142','P'],['456/143','P'],['456/144','U'],['456/145','P'],['456/146','P'],['456/147','P'],['456/148','U'],['456/149','P'],['456/150','P'],['456/151','P'],['456/152','P'],['456/153','U'],['456/154','U'],['456/155','U'],['456/156','U'],['456/157','P'],['456/158','P'],['456/159','U'],['456/160','P'],['456/161','P'],['456/162','P'],['456/163','U'],['456/164','P'],['456/165','U'],['456/166','U'],['456/167','P'],['456/168','U'],['456/169','P'],['456/170','P'],['456/171','P'],['456/172','P'],['456/173','P'],['456/174','P'],['456/175','P'],['456/176','U'],['456/177','U'],['456/178','P'],['456/179','P'],['456/180','P'],['456/181','P'],['456/182','U'],['456/183','P'],['456/184','U'],['456/185','P'],['456/186','P'],['456/187','U'],['456/188','P'],['456/189','U'],['456/190','P'],['456/191','P'],['456/192','P'],['456/193','P'],['456/194','U'],['456/195','P'],['456/196','U'],['456/197','U'],['456/198','U'],['456/199','P'],['456/200','P'],['456/201','P'],['456/202','P'],['456/203','U'],['456/204','U'],['456/205','P'],['456/206','U'],['456/207','P'],['456/208','P'],['456/209','U'],['456/210','P'],['456/211','P'],['456/212','U'],['456/213','P'],['456/214','U'],['456/215','U'],['456/216','U'],['456/217','P'],['456/218','U'],['456/219','U'],['456/220','P'],['456/221','U'],['456/222','P'],['456/223','P'],['456/224','P'],['456/225','U'],['456/226','P'],['456/227','P'],['456/228','P'],['456/229','U'],['456/230','U'],['456/231','U'],['456/232','U'],['456/233','U'],['456/234','U'],['456/235','U'],['456/236','P'],['456/237','U'],['456/238','P'],['456/239','P'],['456/240','U'],['456/241','U'],['456/242','P'],['456/243','P'],['456/244','P'],['456/245','P'],['456/246','P'],['456/247','U'],['456/248','U'],['456/249','P'],['456/250','P'],['456/251','P'],['456/252','U'],['456/253','U'],['456/254','P'],['456/255','U'],['456/256','P'],['456/257','P'],['456/258','P'],['456/259','U'],['456/260','P'],['456/261','U'],['456/262','U']];
 
         const paymentData = paymentDataRaw.map(([house, code]) => ({
             house,
+            ownerName: null, // ไม่มีคอลัมน์นี้ในไฟล์ Excel ต้นฉบับ
+            plot: null,      // ไม่มีคอลัมน์นี้ในไฟล์ Excel ต้นฉบับ
             status: code === 'P' ? 'จ่ายแล้ว' : 'ยังไม่ได้จ่าย'
         }));
         const paidHouses = paymentData.filter((d) => d.status === 'จ่ายแล้ว');
         const unpaidHouses = paymentData.filter((d) => d.status === 'ยังไม่ได้จ่าย');
         const paymentTotal = paymentData.length;
+        const paymentRate = paidHouses.length / paymentTotal;
         const PAID_COLOR = '#2F9E56';
         const UNPAID_COLOR = '#DC3853';
         const HOUSE_PREFIX = '456/';
@@ -222,117 +236,17 @@
             return paymentData.find((d) => d.house === candidate) || null;
         }
 
-        // Build a standalone list page (paid/unpaid) and open it in a new tab,
-        // with its own search, sorting and pagination — no server needed.
-        function openHouseListWindow(status) {
-            const list = status === 'จ่ายแล้ว' ? paidHouses : unpaidHouses;
-            const color = status === 'จ่ายแล้ว' ? PAID_COLOR : UNPAID_COLOR;
-            const rowsJson = JSON.stringify(list);
-            const html = `<!DOCTYPE html>
-<html lang="th"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>รายชื่อบ้านเลขที่ — ${status}</title>
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  * { box-sizing: border-box; }
-  body { font-family: 'Prompt', sans-serif; background:#fff; color:#2C2A3F; margin:0; padding:32px 20px; }
-  .wrap { max-width: 720px; margin: 0 auto; }
-  h1 { font-size: 22px; margin: 0 0 4px; }
-  .badge { display:inline-block; padding:3px 12px; border-radius:999px; font-size:13px; font-weight:600; color:#fff; background:${color}; margin-bottom:20px; }
-  input[type=text] { width:100%; padding:12px 16px; border:1px solid #E4DED3; border-radius:12px; font-family:'Prompt',sans-serif; font-size:15px; margin-bottom:16px; }
-  table { width:100%; border-collapse: collapse; }
-  th, td { text-align:left; padding:10px 12px; font-size:14px; border-bottom:1px solid #F0EDE7; }
-  th { cursor:pointer; user-select:none; color:#7A7570; font-weight:600; white-space:nowrap; }
-  th:hover { color:#2C2A3F; }
-  .status-pill { display:inline-block; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:600; color:#fff; background:${color}; }
-  .pager { display:flex; align-items:center; justify-content:space-between; margin-top:16px; font-size:13px; color:#7A7570; }
-  .pager button { border:1px solid #E4DED3; background:#fff; border-radius:8px; padding:6px 14px; cursor:pointer; font-family:'Prompt',sans-serif; }
-  .pager button:disabled { opacity:0.4; cursor:not-allowed; }
-  .empty { text-align:center; color:#7A7570; padding:24px 0; }
-</style></head>
-<body><div class="wrap">
-  <h1>รายชื่อบ้านเลขที่ — ${status}</h1>
-  <span class="badge">ทั้งหมด ${list.length} หลัง</span>
-  <input type="text" id="q" placeholder="ค้นหาบ้านเลขที่ เช่น 456/123 หรือ 123" />
-  <table>
-    <thead><tr>
-      <th id="sortHouse">บ้านเลขที่ ⇅</th>
-      <th>สถานะ การชำระ</th>
-    </tr></thead>
-    <tbody id="tbody"></tbody>
-  </table>
-  <div class="empty" id="empty" style="display:none;">ไม่พบบ้านเลขที่ที่ค้นหา</div>
-  <div class="pager">
-    <span id="pageInfo"></span>
-    <div>
-      <button id="prevBtn">‹ ก่อนหน้า</button>
-      <button id="nextBtn">ถัดไป ›</button>
-    </div>
-  </div>
-</div>
-<script>
-  var allRows = ${rowsJson};
-  var filtered = allRows.slice();
-  var page = 1;
-  var pageSize = 20;
-  var sortAsc = true;
-
-  function houseSortKey(h) {
-    var parts = h.split('/');
-    var num = parseInt(parts[1] || parts[0], 10);
-    return isNaN(num) ? 0 : num;
-  }
-  function render() {
-    var tbody = document.getElementById('tbody');
-    var empty = document.getElementById('empty');
-    var start = (page - 1) * pageSize;
-    var pageRows = filtered.slice(start, start + pageSize);
-    tbody.innerHTML = '';
-    empty.style.display = filtered.length === 0 ? 'block' : 'none';
-    pageRows.forEach(function(r) {
-      var tr = document.createElement('tr');
-      tr.innerHTML = '<td>' + r.house + '</td><td><span class="status-pill">' + r.status + '</span></td>';
-      tbody.appendChild(tr);
-    });
-    var totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-    document.getElementById('pageInfo').textContent = 'หน้า ' + page + ' / ' + totalPages + ' (' + filtered.length + ' หลัง)';
-    document.getElementById('prevBtn').disabled = page <= 1;
-    document.getElementById('nextBtn').disabled = page >= totalPages;
-  }
-  document.getElementById('q').addEventListener('input', function(e) {
-    var v = e.target.value.trim();
-    filtered = allRows.filter(function(r) { return r.house.indexOf(v) !== -1; });
-    page = 1;
-    render();
-  });
-  document.getElementById('sortHouse').addEventListener('click', function() {
-    sortAsc = !sortAsc;
-    filtered.sort(function(a, b) {
-      return sortAsc ? houseSortKey(a.house) - houseSortKey(b.house) : houseSortKey(b.house) - houseSortKey(a.house);
-    });
-    render();
-  });
-  document.getElementById('prevBtn').addEventListener('click', function() { if (page > 1) { page--; render(); } });
-  document.getElementById('nextBtn').addEventListener('click', function() {
-    var totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-    if (page < totalPages) { page++; render(); }
-  });
-  render();
-<\/script>
-</body></html>`;
-            const win = window.open('', '_blank');
-            if (win) {
-                win.document.open();
-                win.document.write(html);
-                win.document.close();
-            }
+        function houseSortKey(h) {
+            const parts = h.split('/');
+            const num = parseInt(parts[1] || parts[0], 10);
+            return isNaN(num) ? 0 : num;
         }
 
         // ---------- Crisis data ----------
         const crisisData = [
             {
                 title: "สำรองจ่ายค่าใช้จ่ายประจำ (Fix Costs)",
-                desc: "ยืมเงินลูกบ้านเพื่อชำระค่าน้ำ, ค่าไฟ, เงินเดือน รปภ., แม่บ้าน, คนสวน และพนักงานนิติบุคคล รวม 2 เดือน",
+                desc: "ยืมเงินลูกบ้านเพื่อชำระค่าน้ำ, ค่าไฟ, เงินเดือน รปภ., แม่บ้าน, คนสวน และพนักงานนิติบุคคล รวม 2 เดือน (ยอดรวม xxx,xxx บาท)",
                 pros: "รักษาระบบสาธารณูปโภคพื้นฐานให้ทำงานต่อเนื่อง",
                 cons: "มีความเสี่ยงทางกฎหมาย หากไม่มีสัญญาเป็นลายลักษณ์อักษร อาจเกิดข้อพิพาทเรื่องดอกเบี้ย ควรเร่งคืนเงินทันทีที่บัญชีใช้งานได้",
                 color: "bg-apple-card",
@@ -389,6 +303,154 @@
             }
         ];
 
+        // ---------- Supplier comparison (from รายงานเปรียบเทียบผู้ให้บริการบริหารนิติบุคคล rv1.pdf) ----------
+        const SUPPLIER_CRITERIA = ['ราคา', 'บริการ', 'ประสบการณ์', 'ทีมงาน', 'เทคโนโลยี', 'การดูแลหลังการขาย', 'ความคุ้มค่าโดยรวม'];
+
+        const supplierComparisonData = [
+            {
+                key: 'scable',
+                name: 'SC ABLE',
+                fullName: 'บริษัท เอสซี เอเบิล จำกัด',
+                recommended: false,
+                price: '112,350 บาท/เดือน',
+                contract: '2 ปี',
+                scores: { 'ราคา': 3, 'บริการ': 3, 'ประสบการณ์': 4, 'ทีมงาน': 3, 'เทคโนโลยี': 5, 'การดูแลหลังการขาย': 4, 'ความคุ้มค่าโดยรวม': 3.5 },
+                total: '28 / 40 คะแนน (70%)'
+            },
+            {
+                key: 'smart',
+                name: 'SMART',
+                fullName: 'บริษัท สมาร์ท เซอร์วิส แอนด์ แมเนจเม้นท์ จำกัด',
+                recommended: true,
+                price: '90,950 บาท/เดือน (ต่ำสุด)',
+                contract: '1 ปี',
+                scores: { 'ราคา': 5, 'บริการ': 4, 'ประสบการณ์': 5, 'ทีมงาน': 3, 'เทคโนโลยี': 4, 'การดูแลหลังการขาย': 5, 'ความคุ้มค่าโดยรวม': 4.5 },
+                total: '36 / 40 คะแนน (90%)'
+            },
+            {
+                key: 'qpm',
+                name: 'QPM',
+                fullName: 'บริษัท ควอลิตี้ พรอพเพอร์ตี้ แมเนจเม้นท์ จำกัด',
+                recommended: false,
+                price: '109,140 บาท/เดือน',
+                contract: 'ไม่ระบุชัดเจนในใบเสนอราคา',
+                scores: { 'ราคา': 4, 'บริการ': 3, 'ประสบการณ์': 4, 'ทีมงาน': 5, 'เทคโนโลยี': 4, 'การดูแลหลังการขาย': 3, 'ความคุ้มค่าโดยรวม': 3.75 },
+                total: '30 / 40 คะแนน (75%)'
+            }
+        ];
+
+        const supplierReasons = [
+            'ราคาค่าบริหารจัดการต่ำที่สุดในบรรดาผู้เสนอราคาทั้ง 3 ราย (90,950 บาท/เดือน รวม VAT)',
+            'ได้รับการรับรองมาตรฐาน ISO 41001:2018 ด้าน Facility Management เป็นรายแรกของประเทศไทย',
+            'ทีมตอบสนองเหตุฉุกเฉิน SMART Red Alert ภายใน 3 ชั่วโมง และ SMART Call Center ให้บริการถึงเที่ยงคืน',
+            'แพลตฟอร์ม SMART World และ SMART NITI & Committee Dashboard ติดตามงานบริหารได้แบบ Real-time',
+            'สัญญาว่าจ้างเพียง 1 ปี ยืดหยุ่นกว่าคู่แข่งที่เสนอสัญญา 2 ปี',
+            'เครือข่ายบริษัทแม่ เอพี (ไทยแลนด์) จำกัด (มหาชน) ดูแลมากกว่า 500 โครงการ กว่า 264,000 ครัวเรือนทั่วประเทศ'
+        ];
+
+        const SupplierComparison = () => (
+            <div className="mt-8 pt-8 border-t border-apple-divider">
+                <h4 className="font-semibold text-apple-text mb-1">เปรียบเทียบผู้ให้บริการบริหารนิติบุคคล 3 ราย</h4>
+                <p className="text-sm text-apple-secondary mb-6">
+                    สรุปจากรายงานเปรียบเทียบผู้ให้บริการฯ ฉบับคณะกรรมการ (มิ.ย.–ก.ค. 2569) — ประเมินจากใบเสนอราคาและข้อมูลบริษัทจริง
+                </p>
+
+                {/* Company summary cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                    {supplierComparisonData.map((c) => (
+                        <div
+                            key={c.key}
+                            className={`relative bg-white rounded-2xl p-5 border ${c.recommended ? 'border-apple-blue ring-2 ring-apple-blue' : 'border-apple-divider'}`}
+                        >
+                            {c.recommended && (
+                                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-apple-blue text-white text-[11px] font-semibold px-3 py-1 rounded-full whitespace-nowrap">
+                                    ผู้ให้บริการที่แนะนำ
+                                </span>
+                            )}
+                            <p className="font-semibold text-apple-text mt-2">{c.name}</p>
+                            <p className="text-[11px] text-apple-secondary mb-3 leading-snug">{c.fullName}</p>
+                            <div className="space-y-1.5 text-xs">
+                                <div className="flex justify-between">
+                                    <span className="text-apple-secondary">ค่าบริหาร</span>
+                                    <span className="font-medium text-apple-text text-right">{c.price}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-apple-secondary">สัญญา</span>
+                                    <span className="font-medium text-apple-text text-right">{c.contract}</span>
+                                </div>
+                                <div className="flex justify-between pt-1.5 border-t border-apple-divider mt-1.5">
+                                    <span className="text-apple-secondary">คะแนนรวม</span>
+                                    <span className={`font-semibold text-right ${c.recommended ? 'text-apple-blue' : 'text-apple-text'}`}>{c.total}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Criteria comparison table */}
+                <div className="overflow-x-auto mb-8">
+                    <table className="w-full text-xs sm:text-sm min-w-[480px]">
+                        <thead>
+                            <tr className="border-b border-apple-divider">
+                                <th className="text-left py-2 pr-3 text-apple-secondary font-medium">เกณฑ์เปรียบเทียบ</th>
+                                {supplierComparisonData.map((c) => (
+                                    <th key={c.key} className={`text-center py-2 px-2 font-medium ${c.recommended ? 'text-apple-blue' : 'text-apple-secondary'}`}>
+                                        {c.name}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {SUPPLIER_CRITERIA.map((crit) => (
+                                <tr key={crit} className="border-b border-apple-divider">
+                                    <td className="py-2 pr-3 text-apple-text">{crit}</td>
+                                    {supplierComparisonData.map((c) => (
+                                        <td key={c.key} className="text-center py-2 px-2">
+                                            <span
+                                                className={`inline-block px-2 py-0.5 rounded-full font-semibold ${c.recommended ? 'bg-apple-blue/10 text-apple-blue' : 'bg-apple-card text-apple-text'}`}
+                                            >
+                                                {c.scores[crit]}/5
+                                            </span>
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Why SMART */}
+                <div className="bg-apple-card rounded-2xl p-6 mb-6">
+                    <p className="font-semibold text-apple-text mb-3">เหตุผลหลักที่คณะกรรมการฯ เลือก SMART (โดยสรุป)</p>
+                    <ul className="space-y-2">
+                        {supplierReasons.map((r, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm text-apple-secondary">
+                                <Icon name="check" className="w-4 h-4 text-apple-green shrink-0 mt-0.5" />
+                                <span>{r}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                <p className="text-xs text-apple-secondary mb-4">
+                    ข้อมูลเปรียบเทียบนี้จัดทำขึ้นเพื่อใช้ประกอบกระบวนการตัดสินใจของคณะกรรมการนิติบุคคลฯ เท่านั้น มิใช่เอกสารจากผู้ให้บริการรายใด
+                </p>
+
+                <a
+                    href="./supplier-comparison.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-apple-blue hover:bg-apple-blueHover text-white px-6 py-3 rounded-full text-sm font-medium transition-colors"
+                >
+                    ดูรายละเอียดการเปรียบเทียบผู้ให้บริการ
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                </a>
+            </div>
+        );
+
+
         // Ribbon Banner (Apple Store Style)
         const Ribbon = () => (
             <div className="bg-[#F7F3ED] text-apple-text text-sm text-center py-3 px-4 flex flex-col sm:flex-row justify-center items-center gap-2 border-b border-apple-divider">
@@ -403,7 +465,8 @@
             { href: '#budget', label: 'งบประมาณ' },
             { href: '#payment-status', label: 'สถานะชำระเงิน' },
             { href: '#crisis', label: 'ปัญหาเฉพาะหน้า' },
-            { href: '#roadmap', label: 'แผนงานอนาคต' }
+            { href: '#roadmap', label: 'แผนงานอนาคต' },
+            { href: '#team', label: 'ทีมงาน' }
         ];
 
         const ChapterNav = () => {
@@ -759,7 +822,7 @@
             );
         };
 
-        // Payment Status Popup
+        // Payment Status Popup — high-visibility, friendly for elderly users
         const PaymentPopup = ({ result, onClose }) => {
             if (!result) return null;
             const isPaid = result.status === 'จ่ายแล้ว';
@@ -769,27 +832,133 @@
             return (
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100] px-6" onClick={onClose}>
                     <div
-                        className="bg-white rounded-[24px] p-8 max-w-sm w-full text-center shadow-xl"
+                        className="bg-white rounded-[24px] p-8 max-w-sm w-full text-center shadow-xl border-4"
+                        style={{ borderColor: isPaid ? PAID_COLOR : '#F5A623' }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div
-                            className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
-                            style={{ backgroundColor: isPaid ? '#E7F6EC' : '#FCE8EB' }}
+                            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+                            style={{ backgroundColor: isPaid ? '#E7F6EC' : '#FEF3E2' }}
                         >
                             <Icon
                                 name={isPaid ? 'check' : 'alert'}
-                                className="w-7 h-7"
-                                style={{ color: isPaid ? PAID_COLOR : UNPAID_COLOR }}
+                                className="w-8 h-8"
+                                style={{ color: isPaid ? PAID_COLOR : '#E08E0B' }}
                             />
                         </div>
                         <p className="text-sm text-apple-secondary mb-1">บ้านเลขที่ {result.house}</p>
                         <p className="typography-h3 mb-3">{message}</p>
                         <button
                             onClick={onClose}
-                            className="mt-2 bg-apple-blue hover:bg-apple-blueHover text-white px-6 py-2 rounded-full text-sm font-medium transition-colors"
+                            className="mt-2 bg-apple-blue hover:bg-apple-blueHover text-white px-8 py-3 rounded-full text-base font-medium transition-colors"
                         >
                             ปิด
                         </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // In-page house list Drawer (slide-over) — replaces the old "open new tab" behaviour
+        const HouseListDrawer = ({ status, onClose }) => {
+            const [q, setQ] = useState('');
+            const [sortAsc, setSortAsc] = useState(true);
+            const [page, setPage] = useState(1);
+            const pageSize = 15;
+
+            if (!status) return null;
+            const color = status === 'จ่ายแล้ว' ? PAID_COLOR : UNPAID_COLOR;
+            const fullList = status === 'จ่ายแล้ว' ? paidHouses : unpaidHouses;
+
+            const filtered = fullList
+                .filter((d) => d.house.includes(q.trim()))
+                .sort((a, b) => (sortAsc ? 1 : -1) * (houseSortKey(a.house) - houseSortKey(b.house)));
+
+            const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+            const pageRows = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+            return (
+                <div className="fixed inset-0 z-[110]">
+                    <div className="absolute inset-0 bg-black/40" onClick={onClose}></div>
+                    <div className="absolute right-0 top-0 h-full w-full sm:w-[420px] bg-white shadow-2xl flex flex-col animate-[slideIn_0.25s_ease-out]">
+                        <div className="p-6 border-b border-apple-divider shrink-0">
+                            <div className="flex items-center justify-between mb-1">
+                                <h3 className="typography-h3">รายชื่อบ้านเลขที่</h3>
+                                <button
+                                    onClick={onClose}
+                                    aria-label="ปิด"
+                                    className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-apple-card shrink-0"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <span
+                                className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white"
+                                style={{ backgroundColor: color }}
+                            >
+                                {status} • ทั้งหมด {fullList.length} หลัง
+                            </span>
+                        </div>
+
+                        <div className="p-6 pb-3 shrink-0 space-y-3">
+                            <input
+                                type="text"
+                                value={q}
+                                onChange={(e) => { setQ(e.target.value); setPage(1); }}
+                                placeholder="ค้นหาบ้านเลขที่ เช่น 456/123 หรือ 123"
+                                className="w-full border border-apple-divider rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-apple-blue"
+                            />
+                            <button
+                                onClick={() => setSortAsc((v) => !v)}
+                                className="flex items-center gap-1.5 text-xs text-apple-secondary hover:text-apple-text"
+                            >
+                                เรียงตามบ้านเลขที่ {sortAsc ? '(น้อย → มาก)' : '(มาก → น้อย)'}
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v18m13.5-4.5L16.5 21m0 0L12 16.5m4.5 4.5V3" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="flex-grow overflow-y-auto px-6">
+                            {pageRows.length === 0 && (
+                                <p className="text-sm text-apple-secondary text-center py-10">ไม่พบบ้านเลขที่ที่ค้นหา</p>
+                            )}
+                            <div className="divide-y divide-apple-divider">
+                                {pageRows.map((h) => (
+                                    <div key={h.house} className="py-3 flex items-center justify-between gap-3">
+                                        <span className="text-sm font-medium text-apple-text">{h.house}</span>
+                                        <span
+                                            className="text-xs font-semibold px-2.5 py-0.5 rounded-full text-white shrink-0"
+                                            style={{ backgroundColor: color }}
+                                        >
+                                            {h.status}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="p-6 pt-4 border-t border-apple-divider shrink-0 flex items-center justify-between text-sm">
+                            <span className="text-apple-secondary text-xs">หน้า {page} / {totalPages} ({filtered.length} หลัง)</span>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                    disabled={page <= 1}
+                                    className="border border-apple-divider rounded-full px-4 py-1.5 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-apple-card"
+                                >
+                                    ‹ ก่อนหน้า
+                                </button>
+                                <button
+                                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                    disabled={page >= totalPages}
+                                    className="border border-apple-divider rounded-full px-4 py-1.5 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-apple-card"
+                                >
+                                    ถัดไป ›
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             );
@@ -801,6 +970,7 @@
             const [searchResult, setSearchResult] = useState(undefined); // undefined = no search yet, null = not found, obj = found
             const [popupResult, setPopupResult] = useState(null);
             const [hovered, setHovered] = useState(null);
+            const [drawerStatus, setDrawerStatus] = useState(null);
 
             const paidPct = paidHouses.length / paymentTotal;
             const unpaidPct = unpaidHouses.length / paymentTotal;
@@ -810,6 +980,13 @@
                 setSearchResult(found);
             };
 
+            const summaryCards = [
+                { label: 'บ้านทั้งหมด', value: paymentTotal + ' หลัง', color: '#926AA8' },
+                { label: 'จ่ายแล้ว', value: paidHouses.length + ' หลัง', color: PAID_COLOR },
+                { label: 'ยังไม่จ่าย', value: unpaidHouses.length + ' หลัง', color: UNPAID_COLOR },
+                { label: 'อัตราการชำระ', value: formatPct(paymentRate), color: '#926AA8' }
+            ];
+
             return (
                 <section id="payment-status" className="py-24 bg-white border-b border-apple-divider">
                     <div className="max-w-[1024px] mx-auto px-6">
@@ -817,14 +994,14 @@
                             <div className="w-14 h-14 rounded-full bg-apple-card flex items-center justify-center mx-auto mb-5 text-apple-blue">
                                 <Icon name="pie" className="w-7 h-7" />
                             </div>
-                            <h2 className="typography-h2 mb-4">สถานการณ์การชำระค่าส่วนกลาง</h2>
+                            <h2 className="typography-h2 mb-4">สถานะการชำระค่าส่วนกลาง</h2>
                             <p className="typography-body text-apple-secondary max-w-2xl mx-auto">
-                                ตรวจสอบสถานะ การชำระค่าส่วนกลางของบ้านท่าน หรือดูภาพรวมทั้งหมู่บ้าน — ข้อมูลอัปเดตล่าสุดจากฝ่ายบัญชีนิติบุคคล
+                                ตรวจสอบสถานะการชำระค่าส่วนกลางของบ้านท่าน หรือดูภาพรวมทั้งหมู่บ้าน — ข้อมูลอัปเดตล่าสุดจากฝ่ายบัญชีนิติบุคคล (21 ก.ค. 2569)
                             </p>
                         </div>
 
                         {/* Search box */}
-                        <div className="max-w-xl mx-auto mb-6">
+                        <div className="max-w-xl mx-auto mb-14">
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <input
                                     type="text"
@@ -853,8 +1030,6 @@
                                     <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-1 text-sm">
                                         <span className="text-apple-secondary">บ้านเลขที่</span>
                                         <span className="font-semibold text-apple-text">{searchResult.house}</span>
-                                        <span className="text-apple-secondary">ชื่อเจ้าของบ้าน</span>
-                                        <span className="font-semibold text-apple-text">— (ไม่มีข้อมูลในไฟล์)</span>
                                         <span className="text-apple-secondary">สถานะการชำระ</span>
                                         <span
                                             className="font-semibold px-2.5 py-0.5 rounded-full text-white text-xs w-fit"
@@ -872,14 +1047,24 @@
                                 </div>
                             )}
                             <p className="text-xs text-apple-secondary text-center mt-3">
-                                *ข้อมูลอัพเดตถึงวันที่ 20 ก.ค. 2569
+                                * ไฟล์ข้อมูลที่แนบมามีเฉพาะเลขที่บ้านและสถานะการชำระ ยังไม่มีคอลัมน์ชื่อเจ้าของบ้าน/แปลง หากเพิ่มข้อมูลในไฟล์ Excel ภายหลัง ระบบจะแสดงผลให้อัตโนมัติ
                             </p>
                         </div>
 
+                        {/* Summary cards */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+                            {summaryCards.map((c) => (
+                                <div key={c.label} className="bg-white border border-apple-divider rounded-2xl p-5 text-center">
+                                    <p className="text-xs sm:text-sm text-apple-secondary mb-1">{c.label}</p>
+                                    <p className="text-xl sm:text-2xl font-semibold" style={{ color: c.color }}>{c.value}</p>
+                                </div>
+                            ))}
+                        </div>
+
                         {/* Pie chart + legend */}
-                        <div className="grid md:grid-cols-2 gap-10 items-center mt-16">
+                        <div className="grid md:grid-cols-2 gap-10 items-center">
                             <PieChart
-                                onSliceClick={(status) => openHouseListWindow(status)}
+                                onSliceClick={(status) => setDrawerStatus(status)}
                                 onSliceHover={setHovered}
                                 hovered={hovered}
                             />
@@ -890,7 +1075,7 @@
                                 ].map((s) => (
                                     <button
                                         key={s.key}
-                                        onClick={() => openHouseListWindow(s.key)}
+                                        onClick={() => setDrawerStatus(s.key)}
                                         onMouseEnter={() => setHovered(s.key)}
                                         onMouseLeave={() => setHovered(null)}
                                         className={`w-full text-left rounded-2xl p-5 flex items-center justify-between transition-colors ${hovered === s.key ? 'bg-apple-card' : 'bg-white hover:bg-apple-card/60'} border border-apple-divider`}
@@ -906,13 +1091,14 @@
                                     </button>
                                 ))}
                                 <p className="text-xs text-apple-secondary pt-2">
-                                    รวมทั้งหมด {paymentTotal} หลัง • คลิกที่กราฟหรือรายการเพื่อดูรายชื่อบ้านเลขที่ทั้งหมดในแท็บใหม่ (ค้นหา/เรียงลำดับ/แบ่งหน้าได้)
+                                    รวมทั้งหมด {paymentTotal} หลัง • แตะที่กราฟหรือรายการเพื่อดูรายชื่อบ้านเลขที่ทั้งหมด (ค้นหา/เรียงลำดับ/แบ่งหน้าได้)
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <PaymentPopup result={popupResult} onClose={() => setPopupResult(null)} />
+                    <HouseListDrawer status={drawerStatus} onClose={() => setDrawerStatus(null)} />
                 </section>
             );
         };
@@ -995,6 +1181,7 @@
                                         <p className="text-sm text-apple-secondary leading-relaxed">{plan.cons}</p>
                                     </div>
                                 </div>
+                                {idx === 0 && <SupplierComparison />}
                             </div>
                         ))}
                     </div>
@@ -1002,9 +1189,63 @@
             </section>
         );
 
+        // Team Section — introduces the village committee at the bottom of the page
+        const TeamSection = () => (
+            <section id="team" className="py-24 bg-[#f5f5f7]">
+                <div className="max-w-[900px] mx-auto px-6 text-center">
+                    <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mx-auto mb-5 text-apple-blue shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                        </svg>
+                    </div>
+                    <h2 className="typography-h2 mb-4">ทีมงานนิติบุคคล</h2>
+                    <p className="typography-body text-apple-secondary max-w-2xl mx-auto mb-12">
+                        คณะกรรมการนิติบุคคลหมู่บ้าน สีวลี ชุดปัจจุบัน ทำงานร่วมมือกันด้วยใจอาสา เพื่อดูแลหมู่บ้านของเราให้น่าอยู่ยิ่งขึ้น
+                    </p>
+                    <div className="team-photo-card bg-white rounded-[28px] p-3 sm:p-4 shadow-sm inline-block max-w-full">
+                        <img
+                            src="https://lh3.googleusercontent.com/d/1Up5VAcsJAOBPop8B-2IVSl0MeUgjWHHU"
+                            onError={(e) => {
+                                if (e.target.dataset.fallback !== '1') {
+                                    e.target.dataset.fallback = '1';
+                                    e.target.src = './team-photo.jpg';
+                                }
+                            }}
+                            alt="ทีมงานนิติบุคคลหมู่บ้าน สีวลี — Meet the Team"
+                            className="rounded-[20px] w-full h-auto max-w-[800px] mx-auto block"
+                        />
+                    </div>
+                </div>
+            </section>
+        );
+
+
+        const InAppBrowserBanner = () => {
+            const [isLine, setIsLine] = useState(false);
+            useEffect(() => {
+                const ua = (navigator.userAgent || '').toLowerCase();
+                setIsLine(ua.indexOf('line') !== -1);
+            }, []);
+            if (!isLine) return null;
+            const openInBrowser = () => {
+                const url = window.location.href;
+                const sep = url.includes('?') ? '&' : '?';
+                window.location.href = url + sep + 'openExternalBrowser=1';
+            };
+            return (
+                <div className="bg-[#06C755] text-white text-xs sm:text-sm text-center py-2.5 px-4 flex items-center justify-center gap-3 flex-wrap">
+                    <span>คุณกำลังเปิดหน้านี้ผ่านแอป LINE — บางฟังก์ชันอาจทำงานไม่เต็มที่</span>
+                    <button onClick={openInBrowser} className="underline font-semibold shrink-0">
+                        เปิดในเบราว์เซอร์ &gt;
+                    </button>
+                </div>
+            );
+        };
+
         const App = () => {
             return (
                 <div className="min-h-screen">
+                    <InAppBrowserBanner />
                     <Ribbon />
                     <ChapterNav />
 
@@ -1026,6 +1267,7 @@
                         <PaymentStatusSection />
                         <CrisisSection />
                         <RoadmapSection />
+                        <TeamSection />
                     </main>
 
                     {/* Footer */}
@@ -1033,7 +1275,17 @@
                         <div className="max-w-[1024px] mx-auto px-6 text-xs text-apple-secondary space-y-2">
                             <p>จัดทำโดย คณะกรรมการหมู่บ้านชุดใหม่ • ข้อมูลอัปเดต ณ เดือนกรกฎาคม 2026</p>
                             <p>เอกสารฉบับนี้ใช้สำหรับการสื่อสารภายในหมู่บ้านเท่านั้น เพื่อความเข้าใจตรงกันและโปร่งใสในการบริหารงาน</p>
-                     
+                            <p>
+                                เวอร์ชันออนไลน์อัปเดตล่าสุดที่{' '}
+                                <a
+                                    href="https://village-update-2026.tiiny.site/#roadmap"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-apple-blue hover:underline font-medium"
+                                >
+                                    village-update-2026.tiiny.site
+                                </a>
+                            </p>
                         </div>
                     </footer>
                 </div>
